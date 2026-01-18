@@ -14,7 +14,7 @@ class EmpresaForm
         return $schema
             ->components([
                 Select::make('grupo_id')
-                    ->relationship('grupo', 'id')
+                    ->relationship('grupo', 'nome')
                     ->required(),
                 TextInput::make('nome')
                     ->required(),

@@ -14,7 +14,7 @@ class UnidadeForm
         return $schema
             ->components([
                 Select::make('empresa_id')
-                    ->relationship('empresa', 'id')
+                    ->relationship('empresa', 'nome')
                     ->required(),
                 TextInput::make('nome')
                     ->required(),

@@ -19,15 +19,10 @@ class Colaboradores extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
-
-    protected static string $view = 'filament.ops.pages.colaboradores';
-
-    protected static ?string $navigationGroup = 'Operacional';
-
-    protected static ?string $navigationLabel = 'Colaboradores';
-
-    protected static ?int $navigationSort = 1;
+    public function getView(): string
+    {
+        return 'filament.ops.pages.colaboradores';
+    }
 
     public function table(Table $table): Table
     {

@@ -14,7 +14,7 @@ class SetorForm
         return $schema
             ->components([
                 Select::make('unidade_id')
-                    ->relationship('unidade', 'id')
+                    ->relationship('unidade', 'nome')
                     ->required(),
                 TextInput::make('nome')
                     ->required(),

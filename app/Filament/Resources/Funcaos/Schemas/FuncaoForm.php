@@ -14,7 +14,7 @@ class FuncaoForm
         return $schema
             ->components([
                 Select::make('setor_id')
-                    ->relationship('setor', 'id')
+                    ->relationship('setor', 'nome')
                     ->required(),
                 TextInput::make('nome')
                     ->required(),

@@ -20,11 +20,14 @@ class ColaboradorDetalhe extends Page implements HasInfolists
 {
     use InteractsWithInfolists;
 
-    protected static string $view = 'filament.ops.pages.colaborador-detalhe';
-
     protected static bool $shouldRegisterNavigation = false;
 
     public ?Colaborador $colaborador = null;
+
+    public function getView(): string
+    {
+        return 'filament.ops.pages.colaborador-detalhe';
+    }
 
     public function mount(int $record): void
     {

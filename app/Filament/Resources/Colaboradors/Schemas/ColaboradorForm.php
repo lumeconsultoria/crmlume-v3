@@ -14,13 +14,13 @@ class ColaboradorForm
         return $schema
             ->components([
                 Select::make('funcao_id')
-                    ->relationship('funcao', 'id')
+                    ->relationship('funcao', 'nome')
                     ->required(),
                 Select::make('unidade_id')
-                    ->relationship('unidade', 'id')
+                    ->relationship('unidade', 'nome')
                     ->required(),
                 Select::make('empresa_id')
-                    ->relationship('empresa', 'id')
+                    ->relationship('empresa', 'nome')
                     ->required(),
                 TextInput::make('nome')
                     ->required(),
