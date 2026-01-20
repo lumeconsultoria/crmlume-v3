@@ -30,8 +30,8 @@ return [
         'type' => 'funcional',
     ],
     'cartao_de_ponto' => [
-        'enabled' => false,
-        'type' => 'futuro',
+        'enabled' => true,
+        'type' => 'funcional',
     ],
     'dashboards' => [
         'enabled' => false,
