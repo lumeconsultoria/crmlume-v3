@@ -26,6 +26,7 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])

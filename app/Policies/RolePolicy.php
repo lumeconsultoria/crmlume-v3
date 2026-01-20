@@ -11,7 +11,16 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class RolePolicy
 {
     use HandlesAuthorization;
-    
+
+    public function before(AuthUser $authUser, string $ability): ?bool
+    {
+        if (! moduleEnabled('auth_usuarios')) {
+            return false;
+        }
+
+        return null;
+    }
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:Role');
@@ -66,5 +75,4 @@ class RolePolicy
     {
         return $authUser->can('Reorder:Role');
     }
-
 }

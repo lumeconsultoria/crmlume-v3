@@ -24,6 +24,11 @@ class GrupoResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'admin';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return moduleEnabled('estrutura_organizacional');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return GrupoForm::configure($schema);
