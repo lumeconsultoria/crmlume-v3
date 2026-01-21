@@ -91,6 +91,11 @@ class SetorForm
                                     ->label('Setor Nome')
                                     ->required()
                                     ->helperText('Obrigatório. Nome oficial do Setor.'),
+                                TextInput::make('descricao')
+                                    ->label('Descrição do Setor')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Obrigatório. Descreva resumidamente o Setor.'),
                             ]),
                     ]),
                 Section::make('Endereço / Dados Complementares')

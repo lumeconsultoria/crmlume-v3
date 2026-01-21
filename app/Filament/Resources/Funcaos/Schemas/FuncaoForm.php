@@ -119,6 +119,11 @@ class FuncaoForm
                                     ->label('Função Nome')
                                     ->required()
                                     ->helperText('Obrigatório. Nome oficial da Função.'),
+                                TextInput::make('descricao')
+                                    ->label('Descrição da Função')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Obrigatório. Descreva resumidamente a Função.'),
                             ]),
                     ]),
                 Section::make('Endereço / Dados Complementares')

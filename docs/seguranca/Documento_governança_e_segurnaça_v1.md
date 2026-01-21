@@ -1,3 +1,20 @@
+## [STATUS DE FINALIZAÇÃO - 21/01/2026]
+
+Resumo do dia:
+- CSV de grau de risco (CNAE) salvo em database/cnae_risk_final.csv.
+- Formulários de Empresa e Unidade em processo de limpeza final (remoção de código antigo, manter só método configure).
+
+Próximos passos para amanhã:
+- Finalizar limpeza dos formulários Empresa/Unidade (remover blocos antigos, garantir só método configure).
+- Implementar leitura automática do CSV de grau de risco para preencher o campo grau_risco conforme o CNAE.
+- Garantir que todos os campos estejam editáveis e funcionais.
+- Validar visualmente e testar importação automática do grau de risco.
+
+Pendências:
+- Revisar se todos os campos obrigatórios estão presentes e funcionais.
+- Testar cadastro completo com diferentes CNAEs.
+
+Observação: continuar a partir deste status amanhã para garantir zero retrabalho.
 ## [MARCAÇÃO DE INTERAÇÃO - 21/01/2026]
 
 Observações do usuário:
