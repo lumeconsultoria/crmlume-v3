@@ -24,6 +24,8 @@ class ColaboradorPanelProvider extends PanelProvider
         return $panel
             ->id('colaborador')
             ->path('colaborador')
+            ->authGuard('colaborador')
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])

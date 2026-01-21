@@ -26,16 +26,8 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
-            ->homeUrl(function (): string {
-                $user = Auth::user();
-
-                if ($user && (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user))) {
-                    return '/ops/meu-ponto';
-                }
-
-                return '/ops/cartao-ponto';
-            })
-            ->authGuard('web')
+            ->homeUrl(fn(): string => '/ops/registro-pontos')
+            ->authGuard('ops')
             ->login()
             ->colors([
                 'primary' => Color::Amber,

@@ -40,7 +40,7 @@ class ColaboradorDetalhe extends Page implements HasInfolists
 
         $user = Auth::user();
         if (! $user || ! userCanAccessColaborador($user, $this->colaborador)) {
-            redirect()->to('/ops/meu-ponto');
+            redirect()->to('/ops/registro-pontos');
         }
     }
 

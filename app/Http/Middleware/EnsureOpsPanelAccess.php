@@ -19,7 +19,11 @@ class EnsureOpsPanelAccess
             return $next($request);
         }
 
-        if (userIsSuperAdmin($user) || userIsAdminLume($user)) {
+        if (userIsSuperAdmin($user)) {
+            return $next($request);
+        }
+
+        if (userIsAdminLume($user)) {
             abort(403);
         }
 

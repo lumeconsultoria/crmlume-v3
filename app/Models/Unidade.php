@@ -15,6 +15,16 @@ class Unidade extends Model
     protected $fillable = [
         'empresa_id',
         'nome',
+        'tipo_documento',
+        'documento',
+        'cnae',
+        'atividade',
+        'grau_risco',
+        'cep',
+        'logradouro',
+        'bairro',
+        'cidade',
+        'uf',
         'ativo',
     ];
 
@@ -25,7 +35,21 @@ class Unidade extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['empresa_id', 'nome', 'ativo'])
+            ->logOnly([
+                'empresa_id',
+                'nome',
+                'tipo_documento',
+                'documento',
+                'cnae',
+                'atividade',
+                'grau_risco',
+                'cep',
+                'logradouro',
+                'bairro',
+                'cidade',
+                'uf',
+                'ativo',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

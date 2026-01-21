@@ -20,6 +20,8 @@ class DryRunImportacao extends Page
 {
     use InteractsWithForms;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $title = 'Dry-Run Importação';
 
     protected static ?string $navigationLabel = 'Dry-Run Importação';
@@ -35,6 +37,11 @@ class DryRunImportacao extends Page
     public array $report = [];
 
     public array $errors = [];
+
+    public static function canAccess(): bool
+    {
+        return false;
+    }
 
     public function mount(): void
     {

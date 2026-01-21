@@ -39,7 +39,7 @@ class CartaoPontoDetalhe extends Page implements HasInfolists
 
         $user = Auth::user();
         if (! $user || ! $user->can('view', $this->registro)) {
-            redirect()->to('/ops/meu-ponto');
+            redirect()->to('/ops/registro-pontos');
         }
     }
 

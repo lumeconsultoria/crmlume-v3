@@ -11,16 +11,15 @@ use App\Models\Setor;
 use App\Models\Unidade;
 use App\Models\User;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
 
 class GovernancaAcesso extends Page implements HasTable
 {
@@ -81,16 +80,8 @@ class GovernancaAcesso extends Page implements HasTable
                     ->label('Editar Acesso')
                     ->icon('heroicon-o-lock-closed')
                     ->modalHeading('Governança de Acesso')
-                    ->modalDescription('Ajuste roles e escopo do usuário selecionado.')
+                    ->modalDescription('Ajuste apenas o escopo organizacional do usuário selecionado.')
                     ->form([
-                        Section::make('Roles')
-                            ->schema([
-                                Select::make('roles')
-                                    ->label('Roles')
-                                    ->multiple()
-                                    ->options(fn() => Role::orderBy('name')->pluck('name', 'name')->all())
-                                    ->required(),
-                            ]),
                         Section::make('Escopo Organizacional')
                             ->schema([
                                 Select::make('grupo_id')
@@ -112,8 +103,8 @@ class GovernancaAcesso extends Page implements HasTable
                             ]),
                     ])
                     ->mountUsing(function (Action $action, User $record): void {
-                        $action->fill([
-                            'roles' => $record->roles->pluck('name')->all(),
+                        // Segurança: roles não são atribuídas aqui. Apenas escopo organizacional.
+                        $action->fillForm([
                             'grupo_id' => $record->colaborador?->empresa?->grupo_id,
                             'empresa_id' => $record->colaborador?->empresa_id,
                             'unidade_id' => $record->colaborador?->unidade_id,
@@ -122,24 +113,12 @@ class GovernancaAcesso extends Page implements HasTable
                     })
                     ->action(function (User $record, array $data): void {
                         $actor = Auth::user();
-                        $rolesBefore = $record->roles->pluck('name')->all();
                         $escopoBefore = [
                             'grupo_id' => $record->colaborador?->empresa?->grupo_id,
                             'empresa_id' => $record->colaborador?->empresa_id,
                             'unidade_id' => $record->colaborador?->unidade_id,
                             'setor_id' => $record->colaborador?->funcao?->setor_id,
                         ];
-
-                        $rolesAfter = $data['roles'] ?? [];
-                        if ($actor && $actor->id === $record->id && ! in_array('super_admin', $rolesAfter, true)) {
-                            Notification::make()
-                                ->title('Você não pode remover seu próprio super_admin')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        $record->syncRoles($rolesAfter);
 
                         $colaborador = $record->colaborador;
                         if ($colaborador) {
@@ -217,8 +196,7 @@ class GovernancaAcesso extends Page implements HasTable
                             ->performedOn($record)
                             ->causedBy($actor)
                             ->withProperties([
-                                'roles_before' => $rolesBefore,
-                                'roles_after' => $rolesAfter,
+                                'observacao' => 'Ajuste apenas de escopo organizacional. Roles são gerenciadas no cadastro do usuário.',
                                 'escopo_before' => $escopoBefore,
                                 'escopo_after' => $escopoAfter,
                             ])

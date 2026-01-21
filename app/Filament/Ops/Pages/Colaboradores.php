@@ -24,7 +24,7 @@ class Colaboradores extends Page implements HasTable
         $user = Auth::user();
 
         if ($user && userIsColaborador($user)) {
-            redirect()->to('/ops/meu-ponto');
+            redirect()->to('/ops/registro-pontos');
         }
     }
 

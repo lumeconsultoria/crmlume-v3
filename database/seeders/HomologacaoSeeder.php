@@ -20,35 +20,61 @@ class HomologacaoSeeder extends Seeder
 {
     public function run(): void
     {
-        // Criar grupo TESTE
-        $grupo = Grupo::firstOrCreate(
-            ['nome' => 'TESTE - Homologação'],
-            ['ativo' => true]
-        );
+        // =============================
+        // 3 empresas, 2 colaboradores cada
+        // =============================
+        for ($i = 1; $i <= 3; $i++) {
+            $grupo = Grupo::firstOrCreate(
+                ['nome' => "GRUPO TESTE {$i}"],
+                ['ativo' => true]
+            );
+            $empresa = Empresa::firstOrCreate(
+                ['nome' => "EMPRESA TESTE {$i}"],
+                ['grupo_id' => $grupo->id, 'ativo' => true]
+            );
+            $unidade = Unidade::firstOrCreate(
+                ['empresa_id' => $empresa->id, 'nome' => "FILIAL TESTE {$i}"],
+                ['ativo' => true]
+            );
+            $setor = Setor::firstOrCreate(
+                ['unidade_id' => $unidade->id, 'nome' => "SETOR TESTE {$i}"],
+                ['ativo' => true]
+            );
+            $funcao = Funcao::firstOrCreate(
+                ['setor_id' => $setor->id, 'nome' => "CARGO TESTE {$i}"],
+                ['ativo' => true]
+            );
 
-        // Criar empresa TESTE
-        $empresa = Empresa::firstOrCreate(
-            ['nome' => 'TESTE - Lume Engenharia'],
-            ['grupo_id' => $grupo->id, 'ativo' => true]
-        );
-
-        // Criar unidade TESTE
-        $unidade = Unidade::firstOrCreate(
-            ['empresa_id' => $empresa->id, 'nome' => 'TESTE - Matriz'],
-            ['ativo' => true]
-        );
-
-        // Criar setor TESTE
-        $setor = Setor::firstOrCreate(
-            ['unidade_id' => $unidade->id, 'nome' => 'TESTE - Administrativo'],
-            ['ativo' => true]
-        );
-
-        // Criar função TESTE
-        $funcao = Funcao::firstOrCreate(
-            ['setor_id' => $setor->id, 'nome' => 'TESTE - Analista'],
-            ['ativo' => true]
-        );
+            for ($j = 1; $j <= 2; $j++) {
+                $nome = "Colaborador {$j} Empresa {$i}";
+                $email = "colab{$j}.empresa{$i}@teste.com";
+                $cpf = sprintf('100%d%d%d%d%d%d-%02d', $i, $j, $i, $j, $i, $j, $i*10+$j);
+                $cpfHash = hash('sha256', preg_replace('/\D/', '', $cpf));
+                $colaborador = Colaborador::firstOrCreate(
+                    ['cpf_hash' => $cpfHash],
+                    [
+                        'funcao_id' => $funcao->id,
+                        'unidade_id' => $unidade->id,
+                        'empresa_id' => $empresa->id,
+                        'nome' => $nome,
+                        'data_nascimento' => "1990-0{$i}-1{$j}",
+                        'ativo' => true,
+                    ]
+                );
+                $user = User::firstOrCreate(
+                    ['email' => $email],
+                    [
+                        'colaborador_id' => $colaborador->id,
+                        'name' => $nome,
+                        'password' => Hash::make('senha123'),
+                        'ativo' => true,
+                    ]
+                );
+                $user->syncRoles(['colaborador']);
+                $user->assignRole(Role::findByName('colaborador', 'ops'));
+                echo "✓ Usuário {$nome} criado (Email: {$email})\n";
+            }
+        }
 
         // Criar roles
         Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
@@ -61,6 +87,16 @@ class HomologacaoSeeder extends Seeder
         Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'ceo', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+
+        // Roles para painel OPS (guard ops)
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'rh', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'gestor', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'vendedor_lume', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'ops']);
+
+        // Roles para painel Colaborador (guard colaborador)
+        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'colaborador']);
 
         // ========================================
         // COLABORADOR 1: Anderson (Primeiro Acesso)
@@ -137,6 +173,7 @@ class HomologacaoSeeder extends Seeder
         );
 
         $userAdmin->syncRoles(['admin', 'rh']);
+        $userAdmin->assignRole(Role::findByName('rh', 'ops'));
 
         $this->command->info("✓ Usuário Admin criado (ID: {$userAdmin->id})");
         $this->command->info("  Nome: {$userAdmin->name}");
@@ -172,6 +209,7 @@ class HomologacaoSeeder extends Seeder
         );
 
         $userGestor->syncRoles(['gestor']);
+        $userGestor->assignRole(Role::findByName('gestor', 'ops'));
 
         $this->command->info("✓ Usuário Gestor criado (ID: {$userGestor->id})");
         $this->command->info('  Email: gestor@teste.com');
@@ -206,6 +244,7 @@ class HomologacaoSeeder extends Seeder
         );
 
         $userVendedor->syncRoles(['vendedor_lume']);
+        $userVendedor->assignRole(Role::findByName('vendedor_lume', 'ops'));
 
         $this->command->info("✓ Usuário Vendedor criado (ID: {$userVendedor->id})");
         $this->command->info('  Email: vendedor@teste.com');
@@ -274,6 +313,7 @@ class HomologacaoSeeder extends Seeder
         );
 
         $userSuperAdmin->syncRoles(['super_admin']);
+        $userSuperAdmin->assignRole(Role::findByName('super_admin', 'ops'));
 
         $this->command->info("✓ Usuário Super Admin criado (ID: {$userSuperAdmin->id})");
         $this->command->info('  Email: super@teste.com');
@@ -376,6 +416,40 @@ class HomologacaoSeeder extends Seeder
         );
 
         $userCeo->syncRoles(['ceo']);
+        // ========================================
+        // USUÁRIO COLABORADOR (OPS + COLABORADOR)
+        // ========================================
+        $cpfColaborador = '593.271.846-05';
+        $cpfColaboradorHash = hash('sha256', '59327184605');
+
+        $colaboradorOps = Colaborador::firstOrCreate(
+            ['cpf_hash' => $cpfColaboradorHash],
+            [
+                'funcao_id' => $funcao->id,
+                'unidade_id' => $unidade->id,
+                'empresa_id' => $empresa->id,
+                'nome' => 'TESTE - Joana Colaboradora',
+                'data_nascimento' => Carbon::parse('1994-09-02'),
+                'ativo' => true,
+            ]
+        );
+
+        $userColaborador = User::firstOrCreate(
+            ['email' => 'colaborador.ops@teste.com'],
+            [
+                'colaborador_id' => $colaboradorOps->id,
+                'name' => 'TESTE - Joana Colaboradora',
+                'password' => Hash::make('senha123'),
+                'ativo' => true,
+            ]
+        );
+
+        $userColaborador->assignRole(Role::findByName('colaborador', 'ops'));
+        $userColaborador->assignRole(Role::findByName('colaborador', 'colaborador'));
+
+        $this->command->info("✓ Usuário Colaborador criado (ID: {$userColaborador->id})");
+        $this->command->info('  Email: colaborador.ops@teste.com');
+        $this->command->info('  Senha: senha123');
 
         $this->command->info("✓ Usuário CEO criado (ID: {$userCeo->id})");
         $this->command->info('  Email: ceo@teste.com');

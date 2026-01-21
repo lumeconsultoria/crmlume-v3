@@ -22,6 +22,8 @@ class MeuPonto extends Page implements HasTable
 {
     use InteractsWithTable;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationLabel = 'Meu Ponto';
     protected static string|\UnitEnum|null $navigationGroup = 'Ponto';
     protected static ?int $navigationSort = 1;
@@ -29,14 +31,17 @@ class MeuPonto extends Page implements HasTable
 
     public static function canAccess(): bool
     {
-        $user = Auth::user();
-
-        return $user && userAtivoParaPonto($user, $user->colaborador);
+        return false;
     }
 
     public function getView(): string
     {
         return 'filament.ops.pages.meu-ponto';
+    }
+
+    public function mount(): void
+    {
+        redirect()->to('/ops/registro-pontos');
     }
 
     public function table(Table $table): Table

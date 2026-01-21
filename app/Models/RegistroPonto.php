@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 class RegistroPonto extends Model
 {
@@ -28,6 +30,17 @@ class RegistroPonto extends Model
         'data' => 'date',
         'created_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        if (app()->runningInConsole()) {
+            return;
+        }
+
+        static::addGlobalScope('registro_ponto_scope', function (Builder $query): void {
+            applyRegistroPontoScope($query, Auth::user());
+        });
+    }
 
     public function colaborador(): BelongsTo
     {

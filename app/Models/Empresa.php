@@ -15,6 +15,16 @@ class Empresa extends Model
     protected $fillable = [
         'grupo_id',
         'nome',
+        'tipo_documento',
+        'documento',
+        'cnae',
+        'atividade',
+        'grau_risco',
+        'cep',
+        'logradouro',
+        'bairro',
+        'cidade',
+        'uf',
         'ativo',
     ];
 
@@ -25,7 +35,21 @@ class Empresa extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['grupo_id', 'nome', 'ativo'])
+            ->logOnly([
+                'grupo_id',
+                'nome',
+                'tipo_documento',
+                'documento',
+                'cnae',
+                'atividade',
+                'grau_risco',
+                'cep',
+                'logradouro',
+                'bairro',
+                'cidade',
+                'uf',
+                'ativo',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

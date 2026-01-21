@@ -20,6 +20,10 @@ class RegistroPontoPolicy
 
     public function viewAny(User $user): bool
     {
+        if (! $user->can('ViewAny:RegistroPonto')) {
+            return false;
+        }
+
         if (userIsSuperAdmin($user)) {
             return true;
         }
@@ -33,11 +37,16 @@ class RegistroPontoPolicy
 
     public function view(User $user, RegistroPonto $registro): bool
     {
-        return userCanAccessRegistroPonto($user, $registro->colaborador);
+        return $user->can('View:RegistroPonto')
+            && userCanAccessRegistroPonto($user, $registro->colaborador);
     }
 
     public function create(User $user): bool
     {
+        if (! $user->can('Create:RegistroPonto')) {
+            return false;
+        }
+
         if (userIsSuperAdmin($user) || userIsRh($user) || userIsGestor($user)) {
             return true;
         }
@@ -51,6 +60,10 @@ class RegistroPontoPolicy
 
     public function update(User $user, RegistroPonto $registro): bool
     {
+        if (! $user->can('Update:RegistroPonto')) {
+            return false;
+        }
+
         if (userIsSuperAdmin($user)) {
             return true;
         }
@@ -60,6 +73,6 @@ class RegistroPontoPolicy
 
     public function export(User $user): bool
     {
-        return userCanExportRelatorioPonto($user);
+        return $user->can('Export:RegistroPonto') && userCanExportRelatorioPonto($user);
     }
 }

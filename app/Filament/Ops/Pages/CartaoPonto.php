@@ -68,12 +68,12 @@ class CartaoPonto extends Page implements HasTable
         }
 
         if (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user)) {
-            redirect()->to('/ops/meu-ponto');
+            redirect()->to('/ops/registro-pontos');
             return;
         }
 
         if (! $user->can('viewAny', RegistroPonto::class)) {
-            redirect()->to('/ops/meu-ponto');
+            redirect()->to('/ops/registro-pontos');
         }
     }
 
