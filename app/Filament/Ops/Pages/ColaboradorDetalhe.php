@@ -37,6 +37,11 @@ class ColaboradorDetalhe extends Page implements HasInfolists
             'empresa.grupo',
             'user',
         ])->findOrFail($record);
+
+        $user = Auth::user();
+        if (! $user || ! userCanAccessColaborador($user, $this->colaborador)) {
+            redirect()->to('/ops/meu-ponto');
+        }
     }
 
     public function getTitle(): string
@@ -57,8 +62,8 @@ class ColaboradorDetalhe extends Page implements HasInfolists
                         TextEntry::make('ativo')
                             ->label('Status')
                             ->badge()
-                            ->color(fn ($state) => $state ? 'success' : 'danger')
-                            ->formatStateUsing(fn ($state) => $state ? 'Ativo' : 'Inativo'),
+                            ->color(fn($state) => $state ? 'success' : 'danger')
+                            ->formatStateUsing(fn($state) => $state ? 'Ativo' : 'Inativo'),
                     ])
                     ->columns(2),
 

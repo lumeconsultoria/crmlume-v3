@@ -19,6 +19,15 @@ class Colaboradores extends Page implements HasTable
 {
     use InteractsWithTable;
 
+    public function mount(): void
+    {
+        $user = Auth::user();
+
+        if ($user && userIsColaborador($user)) {
+            redirect()->to('/ops/meu-ponto');
+        }
+    }
+
     public function getView(): string
     {
         return 'filament.ops.pages.colaboradores';
@@ -26,8 +35,17 @@ class Colaboradores extends Page implements HasTable
 
     public function table(Table $table): Table
     {
+        $user = Auth::user();
+        $query = Colaborador::query()->with(['funcao', 'unidade', 'empresa']);
+
+        if ($user) {
+            $query = applyColaboradorScope($query, $user);
+        } else {
+            $query->whereRaw('1 = 0');
+        }
+
         return $table
-            ->query(Colaborador::query()->with(['funcao', 'unidade', 'empresa']))
+            ->query($query)
             ->columns([
                 Tables\Columns\TextColumn::make('nome')
                     ->label('Nome')
@@ -60,7 +78,7 @@ class Colaboradores extends Page implements HasTable
                     ]),
             ])
             ->actions([
-                Tables\Actions\Action::make('solicitar')
+                Action::make('solicitar')
                     ->label('Solicitar Alteração')
                     ->icon('heroicon-o-pencil-square')
                     ->form([
@@ -100,10 +118,10 @@ class Colaboradores extends Page implements HasTable
                         $this->notifyRH($record, $data);
                     }),
 
-                Tables\Actions\Action::make('ver')
+                Action::make('ver')
                     ->label('Ver Detalhes')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (Colaborador $record): string => static::getUrl(['record' => $record->id])),
+                    ->url(fn(Colaborador $record): string => static::getUrl(['record' => $record->id])),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -30,3 +30,4 @@
 
 - Módulos Core devem permanecer habilitados em produção.
 - Sem UI de override neste momento; apenas infraestrutura pronta.
+- Flags são apenas para controle técnico de módulos. Não há cobrança, planos ou limites no escopo atual.

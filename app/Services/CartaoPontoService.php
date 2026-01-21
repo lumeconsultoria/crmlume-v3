@@ -21,7 +21,7 @@ class CartaoPontoService
     ): RegistroPonto {
         $tipo = mb_strtolower(trim($tipo));
 
-        if (! in_array($tipo, ['entrada', 'saida'], true)) {
+        if (! in_array($tipo, ['entrada', 'saida_intervalo', 'retorno_intervalo', 'saida_jornada'], true)) {
             throw new \InvalidArgumentException('Tipo de marcação inválido.');
         }
 

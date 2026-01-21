@@ -18,7 +18,11 @@ class RolePolicy
             return false;
         }
 
-        return null;
+        if (userIsSuperAdmin($authUser)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function viewAny(AuthUser $authUser): bool

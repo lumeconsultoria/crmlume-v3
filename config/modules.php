@@ -37,4 +37,8 @@ return [
         'enabled' => false,
         'type' => 'futuro',
     ],
+    'primeiro_acesso_filament' => [
+        'enabled' => false,
+        'type' => 'funcional',
+    ],
 ];

@@ -2,22 +2,22 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\EnsureColaboradorAtivo;
+use App\Http\Middleware\EnsureOpsPanelAccess;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\Facades\Auth;
 
 class OpsPanelProvider extends PanelProvider
 {
@@ -26,21 +26,22 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
+            ->homeUrl(function (): string {
+                $user = Auth::user();
+
+                if ($user && (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user))) {
+                    return '/ops/meu-ponto';
+                }
+
+                return '/ops/cartao-ponto';
+            })
+            ->authGuard('web')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Ops/Resources'), for: 'App\Filament\Ops\Resources')
             ->discoverPages(in: app_path('Filament/Ops/Pages'), for: 'App\Filament\Ops\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Ops/Widgets'), for: 'App\Filament\Ops\Widgets')
-            ->widgets([
-                \App\Filament\Widgets\CeoStatsWidget::class,
-                \App\Filament\Widgets\RhStatsWidget::class,
-                \App\Filament\Widgets\OpsColaboradoresRecentes::class,
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -54,6 +55,8 @@ class OpsPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureColaboradorAtivo::class,
+                EnsureOpsPanelAccess::class,
             ]);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\AssinaturaRelatorioPonto;
 use App\Models\RegistroPonto;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +15,13 @@ class RelatorioPontoService
 {
     public function exportarPeriodo(CarbonInterface $inicio, CarbonInterface $fim, int $usuarioId): AssinaturaRelatorioPonto
     {
-        $empresaId = $this->resolveEmpresaId($usuarioId);
+        $user = User::query()->with(['colaborador.funcao'])->find($usuarioId);
+
+        if (! $user) {
+            throw new \RuntimeException('Usuário inválido para exportação de relatório.');
+        }
+
+        $empresaId = $this->resolveEmpresaId($user);
         $pasta = sprintf(
             'ponto/%s/%s/%s',
             $inicio->format('Y'),
@@ -26,6 +33,9 @@ class RelatorioPontoService
             ->with(['colaborador', 'ajustes', 'ajustes.alteradoPor'])
             ->whereDate('data', '>=', $inicio->toDateString())
             ->whereDate('data', '<=', $fim->toDateString())
+            ->when($user, function ($query) use ($user) {
+                applyRegistroPontoScope($query, $user);
+            })
             ->orderBy('data')
             ->orderBy('hora')
             ->get();
@@ -56,10 +66,8 @@ class RelatorioPontoService
         ]);
     }
 
-    private function resolveEmpresaId(int $usuarioId): int
+    private function resolveEmpresaId(?User $user): int
     {
-        $user = \App\Models\User::query()->with('colaborador')->find($usuarioId);
-
         return (int) ($user?->colaborador?->empresa_id ?? 0);
     }
 

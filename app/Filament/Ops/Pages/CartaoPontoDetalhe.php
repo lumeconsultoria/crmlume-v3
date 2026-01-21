@@ -24,11 +24,7 @@ class CartaoPontoDetalhe extends Page implements HasInfolists
 
     public static function canAccess(): bool
     {
-        $user = Auth::user();
-
-        return moduleEnabled('cartao_de_ponto')
-            && $user
-            && ($user->hasRole('rh') || $user->hasRole('admin') || $user->hasRole('colaborador'));
+        return false;
     }
 
     public function getView(): string
@@ -42,8 +38,8 @@ class CartaoPontoDetalhe extends Page implements HasInfolists
             ->findOrFail($record);
 
         $user = Auth::user();
-        if ($user?->hasRole('colaborador') && $user->colaborador_id !== $this->registro->colaborador_id) {
-            abort(403);
+        if (! $user || ! $user->can('view', $this->registro)) {
+            redirect()->to('/ops/meu-ponto');
         }
     }
 

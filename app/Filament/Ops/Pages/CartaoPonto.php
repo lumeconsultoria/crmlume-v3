@@ -10,6 +10,7 @@ use App\Services\CartaoPontoService;
 use App\Services\RelatorioPontoService;
 use BackedEnum;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\Action as HeaderAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -38,16 +39,42 @@ class CartaoPonto extends Page implements HasTable
 
     public static function shouldRegisterNavigation(): bool
     {
-        return moduleEnabled('cartao_de_ponto');
+        $user = Auth::user();
+
+        return $user?->can('viewAny', RegistroPonto::class) ?? false;
     }
 
     public static function canAccess(): bool
     {
         $user = Auth::user();
 
-        return moduleEnabled('cartao_de_ponto')
-            && $user
-            && ($user->hasRole('rh') || $user->hasRole('admin') || $user->hasRole('colaborador'));
+        if (! $user) {
+            return false;
+        }
+
+        if (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user)) {
+            return true;
+        }
+
+        return $user->can('viewAny', RegistroPonto::class);
+    }
+
+    public function mount(): void
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        if (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user)) {
+            redirect()->to('/ops/meu-ponto');
+            return;
+        }
+
+        if (! $user->can('viewAny', RegistroPonto::class)) {
+            redirect()->to('/ops/meu-ponto');
+        }
     }
 
     public function getView(): string
@@ -61,12 +88,10 @@ class CartaoPonto extends Page implements HasTable
 
         return $table
             ->query(
-                RegistroPonto::query()
-                    ->with(['colaborador', 'criadoPor'])
-                    ->when(
-                        $user?->hasRole('colaborador') && $user->colaborador_id,
-                        fn($query) => $query->where('colaborador_id', $user->colaborador_id)
-                    )
+                applyRegistroPontoScope(
+                    RegistroPonto::query()->with(['colaborador', 'criadoPor']),
+                    $user
+                )
             )
             ->columns([
                 Tables\Columns\TextColumn::make('colaborador.nome')
@@ -86,8 +111,20 @@ class CartaoPonto extends Page implements HasTable
                 Tables\Columns\TextColumn::make('tipo')
                     ->label('Tipo')
                     ->badge()
-                    ->formatStateUsing(fn(string $state) => $state === 'entrada' ? 'Entrada' : 'Saída')
-                    ->color(fn(string $state) => $state === 'entrada' ? 'success' : 'danger'),
+                    ->formatStateUsing(fn(string $state) => match ($state) {
+                        'entrada' => 'Entrada',
+                        'saida_intervalo' => 'Saída para intervalo',
+                        'retorno_intervalo' => 'Retorno do intervalo',
+                        'saida_jornada' => 'Saída da jornada',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn(string $state) => match ($state) {
+                        'entrada' => 'success',
+                        'retorno_intervalo' => 'success',
+                        'saida_intervalo' => 'warning',
+                        'saida_jornada' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('origem')
                     ->label('Origem')
@@ -106,13 +143,13 @@ class CartaoPonto extends Page implements HasTable
                     ]),
             ])
             ->actions([
-                Tables\Actions\Action::make('ajustar')
+                Action::make('ajustar')
                     ->label('Ajustar')
                     ->icon('heroicon-o-pencil-square')
                     ->modalHeading('Registrar ajuste de ponto')
                     ->modalDescription('O ajuste é permanente e auditável. Informe o motivo com clareza.')
                     ->requiresConfirmation()
-                    ->visible(fn() => Auth::user()?->hasRole('rh'))
+                    ->visible(fn(RegistroPonto $record) => Auth::user()?->can('update', $record))
                     ->form([
                         Textarea::make('motivo')
                             ->label('Motivo do ajuste')
@@ -129,11 +166,6 @@ class CartaoPonto extends Page implements HasTable
                             ->success()
                             ->send();
                     }),
-
-                Tables\Actions\Action::make('espelho')
-                    ->label('Espelho')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn(RegistroPonto $record): string => CartaoPontoDetalhe::getUrl(['record' => $record->id])),
             ])
             ->defaultSort('data', 'desc');
     }
@@ -147,6 +179,7 @@ class CartaoPonto extends Page implements HasTable
                 ->modalHeading('Registrar entrada')
                 ->modalDescription('Confirme os dados antes de registrar. O registro é imutável.')
                 ->requiresConfirmation()
+                ->visible(fn() => Auth::user()?->can('create', RegistroPonto::class))
                 ->form($this->getRegistroForm())
                 ->action(function (array $data) {
                     $this->registrarPonto('entrada', $data);
@@ -158,6 +191,7 @@ class CartaoPonto extends Page implements HasTable
                 ->modalHeading('Registrar saída')
                 ->modalDescription('Confirme os dados antes de registrar. O registro é imutável.')
                 ->requiresConfirmation()
+                ->visible(fn() => Auth::user()?->can('create', RegistroPonto::class))
                 ->form($this->getRegistroForm())
                 ->action(function (array $data) {
                     $this->registrarPonto('saida', $data);
@@ -169,7 +203,7 @@ class CartaoPonto extends Page implements HasTable
                 ->modalHeading('Exportar relatório de ponto')
                 ->modalDescription('A exportação gera assinatura eletrônica interna (hash + usuário + timestamp).')
                 ->requiresConfirmation()
-                ->visible(fn() => Auth::user()?->hasRole('rh') || Auth::user()?->hasRole('admin'))
+                ->visible(fn() => Auth::user()?->can('export', RegistroPonto::class))
                 ->form([
                     DatePicker::make('inicio')
                         ->label('Início')
@@ -202,6 +236,15 @@ class CartaoPonto extends Page implements HasTable
     {
         $colaborador = Colaborador::query()->findOrFail($data['colaborador_id']);
         $dataHora = Carbon::parse($data['data'] . ' ' . $data['hora']);
+        $user = Auth::user();
+
+        if (! $user || ! $user->can('create', RegistroPonto::class)) {
+            abort(403);
+        }
+
+        if (! userCanAccessRegistroPonto($user, $colaborador)) {
+            abort(403);
+        }
 
         app(CartaoPontoService::class)
             ->registrarPonto($colaborador, $tipo, Auth::id(), $dataHora, 'manual');
@@ -216,21 +259,29 @@ class CartaoPonto extends Page implements HasTable
     {
         $user = Auth::user();
         $isColaborador = $user?->hasRole('colaborador') ?? false;
+        $isSelfOnly = $user && (userIsColaborador($user) || userIsAdminLume($user) || userIsVendedorLume($user));
         $colaboradorId = $user?->colaborador_id;
+        $query = Colaborador::query()->orderBy('nome');
+
+        if ($user) {
+            $query = applyColaboradorScope($query, $user);
+        } else {
+            $query->whereRaw('1 = 0');
+        }
 
         return [
             Select::make('colaborador_id')
                 ->label('Colaborador')
                 ->helperText('Selecione o colaborador que terá a marcação registrada.')
                 ->options(
-                    $isColaborador && $colaboradorId
+                    $isSelfOnly && $colaboradorId
                         ? Colaborador::query()->whereKey($colaboradorId)->pluck('nome', 'id')
-                        : Colaborador::query()->orderBy('nome')->pluck('nome', 'id')
+                        : $query->pluck('nome', 'id')
                 )
                 ->searchable()
                 ->required()
                 ->default($colaboradorId)
-                ->disabled($isColaborador && $colaboradorId),
+                ->disabled($isSelfOnly && $colaboradorId),
             DatePicker::make('data')
                 ->label('Data')
                 ->helperText('Data da marcação a ser registrada.')

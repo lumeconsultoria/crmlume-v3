@@ -21,11 +21,14 @@ class Colaborador extends Model
         'unidade_id',
         'empresa_id',
         'nome',
+        'cpf_hash',
+        'data_nascimento',
         'ativo',
     ];
 
     protected $casts = [
         'ativo' => 'boolean',
+        'data_nascimento' => 'date',
     ];
 
     public function getActivitylogOptions(): LogOptions
