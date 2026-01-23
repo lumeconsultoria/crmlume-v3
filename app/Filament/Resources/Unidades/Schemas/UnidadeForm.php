@@ -4,13 +4,13 @@ namespace App\Filament\Resources\Unidades\Schemas;
 
 use App\Models\Empresa;
 use App\Models\Grupo;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -48,69 +48,81 @@ class UnidadeForm
                                             return [];
                                         }
 
-                                        }
-                                    }
-                                                    Section::make('Identificação')
-                                                        ->schema([
-                                                            Grid::make(2)
-                                                                ->schema([
-                                                                    TextInput::make('nome')
-                                                                        ->label('Unidade Nome')
-                                                                        ->required()
-                                                                        ->helperText('Obrigatório. Nome oficial da Unidade.'),
-                                                                    Select::make('tipo_documento')
-                                                                        ->label('Tipo de Documento')
-                                                                        ->options([
-                                                                            'cpf' => 'CPF',
-                                                                            'cnpj' => 'CNPJ',
-                                                                        ])
-                                                                        ->searchable()
-                                                                        ->preload()
-                                                                        ->live()
-                                                                        ->helperText('Selecione o tipo de documento para aplicar a máscara.'),
-                                                                    TextInput::make('documento')
-                                                                        ->label('Documento')
-                                                                        ->mask(fn(Get $get): string => $get('tipo_documento') === 'cpf'
-                                                                            ? '000.000.000-00'
-                                                                            : '00.000.000/0000-00')
-                                                                        ->live(debounce: 800)
-                                                                        ->helperText('Digite o CPF ou CNPJ.'),
-                                                                    TextInput::make('cnae')
-                                                                        ->label('CNAE')
-                                                                        ->helperText('Principal atividade econômica conforme CNAE.'),
-                                                                    TextInput::make('atividade')
-                                                                        ->label('Atividade')
-                                                                        ->helperText('Descrição da atividade principal.'),
-                                                                    TextInput::make('grau_risco')
-                                                                        ->label('Grau de Risco')
-                                                                        ->helperText('Derivado do CNAE (NR 4). Ajuste se necessário.'),
-                                                                ]),
-                                                        ]),
-                                                    Section::make('Endereço / Dados Complementares')
-                                                        ->collapsed()
-                                                        ->schema([
-                                                            Grid::make(2)
-                                                                ->schema([
-                                                                    TextInput::make('cep')
-                                                                        ->label('CEP')
-                                                                        ->mask('00000-000')
-                                                                        ->live(debounce: 800)
-                                                                        ->helperText('Digite o CEP.'),
-                                                                    TextInput::make('logradouro')
-                                                                        ->label('Logradouro'),
-                                                                    TextInput::make('bairro')
-                                                                        ->label('Bairro'),
-                                                                    TextInput::make('cidade')
-                                                                        ->label('Cidade'),
-                                                                    TextInput::make('uf')
-                                                                        ->label('UF')
-                                                                        ->maxLength(2),
-                                                                    Toggle::make('ativo')
-                                                                        ->label('Ativo')
-                                                                        ->required()
-                                                                        ->helperText('Obrigatório. Define se a Unidade está ativa.'),
-                                                                ]),
-                                                        ]),
+                                        return Empresa::query()
+                                            ->where('grupo_id', $grupoId)
+                                            ->orderBy('nome')
+                                            ->pluck('nome', 'id');
+                                    })
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->disabled(fn(Get $get): bool => ! $get('grupo_id'))
+                                    ->helperText('Obrigatório. Selecione a Empresa do vínculo.'),
+                            ]),
+                    ]),
+                Section::make('Identificação')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('nome')
+                                    ->label('Unidade Nome')
+                                    ->required()
+                                    ->helperText('Obrigatório. Nome oficial da Unidade.'),
+                                Select::make('tipo_documento')
+                                    ->label('Tipo de Documento')
+                                    ->options([
+                                        'cpf' => 'CPF',
+                                        'cnpj' => 'CNPJ',
+                                    ])
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->helperText('Selecione o tipo de documento para aplicar a máscara.'),
+                                TextInput::make('documento')
+                                    ->label('Documento')
+                                    ->mask(fn(Get $get): string => $get('tipo_documento') === 'cpf'
+                                        ? '000.000.000-00'
+                                        : '00.000.000/0000-00')
+                                    ->live(debounce: 800)
+                                    ->helperText('Digite o CPF ou CNPJ.'),
+                                TextInput::make('cnae')
+                                    ->label('CNAE')
+                                    ->helperText('Principal atividade econômica conforme CNAE.'),
+                                TextInput::make('atividade')
+                                    ->label('Atividade')
+                                    ->helperText('Descrição da atividade principal.'),
+                                TextInput::make('grau_risco')
+                                    ->label('Grau de Risco')
+                                    ->helperText('Derivado do CNAE (NR 4). Ajuste se necessário.'),
+                            ]),
+                    ]),
+                Section::make('Endereço / Dados Complementares')
+                    ->collapsed()
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('cep')
+                                    ->label('CEP')
+                                    ->mask('00000-000')
+                                    ->live(debounce: 800)
+                                    ->helperText('Digite o CEP.'),
+                                TextInput::make('logradouro')
+                                    ->label('Logradouro'),
+                                TextInput::make('bairro')
+                                    ->label('Bairro'),
+                                TextInput::make('cidade')
+                                    ->label('Cidade'),
+                                TextInput::make('uf')
+                                    ->label('UF')
+                                    ->maxLength(2),
+                                Toggle::make('ativo')
+                                    ->label('Ativo')
+                                    ->required()
+                                    ->helperText('Obrigatório. Define se a Unidade está ativa.'),
+                            ]),
+                    ]),
+            ]);
+    }
 
     private static function fetchCnpj(string $cnpj): ?array
     {
@@ -166,4 +178,10 @@ class UnidadeForm
 
         return $mapa[$tronco] ?? null;
     }
+
+    private static function normalizeDigits(string $value): string
+    {
+        return preg_replace('/\D/', '', $value) ?? '';
+    }
 }
+

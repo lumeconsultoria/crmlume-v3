@@ -26,13 +26,16 @@ class GovernancaAcesso extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationLabel = 'Governança de Acesso';
-    protected static string|\UnitEnum|null $navigationGroup = 'Segurança';
-    protected static ?int $navigationSort = 5;
+    protected static string|\UnitEnum|null $navigationGroup = 'Segurança & Governança';
+    protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
 
     public static function canAccess(): bool
     {
-        return userIsSuperAdmin(Auth::user());
+        $user = Auth::user();
+
+        // Permite super admin e staff administrativo Lume acessar sem travar o painel.
+        return userIsSuperAdmin($user) || userIsAdminLume($user);
     }
 
     public function getView(): string

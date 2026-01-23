@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Colaboradors\Pages;
 
+use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use App\Filament\Resources\Colaboradors\ColaboradorResource;
 use App\Models\Funcao;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateColaborador extends CreateRecord
 {
+    use PrefillsEstrutura;
+
     protected static string $resource = ColaboradorResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

@@ -19,9 +19,9 @@ class PrimeiroAcessoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'RH';
+    protected static string|\UnitEnum|null $navigationGroup = 'Segurança & Governança';
 
-    protected static ?int $navigationSort = 51;
+    protected static ?int $navigationSort = 21;
 
     public static function shouldRegisterNavigation(): bool
     {

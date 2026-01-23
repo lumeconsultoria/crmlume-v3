@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Setors\Pages;
 
+use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use App\Filament\Resources\Setors\SetorResource;
 use App\Models\Unidade;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateSetor extends CreateRecord
 {
+    use PrefillsEstrutura;
+
     protected static string $resource = SetorResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

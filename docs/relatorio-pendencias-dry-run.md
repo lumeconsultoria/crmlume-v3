@@ -39,3 +39,9 @@ Data: 2026-01-19
 
 - O CRM Lume não altera dados de origem automaticamente.
 - Este relatório deve ser compartilhado com o RH responsável para saneamento.
+
+## Impacto em Segurança e Onboarding
+
+- E-mail válido é obrigatório para ativação de acesso.
+- Primeiro acesso permanece bloqueado enquanto os dados não forem saneados.
+- A responsabilidade de correção é operacional (RH na origem dos dados).

@@ -20,7 +20,9 @@ class ColaboradorResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?int $navigationSort = 6;
+    protected static string|\UnitEnum|null $navigationGroup = 'Operacional (Admin)';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'Colaborador';
 

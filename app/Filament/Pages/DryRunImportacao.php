@@ -26,7 +26,9 @@ class DryRunImportacao extends Page
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Importação';
+    protected static string|\UnitEnum|null $navigationGroup = 'Operacional (Admin)';
+
+    protected static ?int $navigationSort = 20;
 
     protected string $view = 'filament.pages.dry-run-importacao';
 
@@ -198,7 +200,7 @@ class DryRunImportacao extends Page
         $line = 1;
         while (($data = fgetcsv($handle)) !== false) {
             $line++;
-            if (! array_filter($data, fn ($value) => $value !== null && trim((string) $value) !== '')) {
+            if (! array_filter($data, fn($value) => $value !== null && trim((string) $value) !== '')) {
                 continue;
             }
 
