@@ -12,8 +12,13 @@ class Grupo extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'indexmed_id',
+        'codigo_externo',
+        'nr_cnpj',
+        'logo_path',
         'nome',
         'ativo',
+        'status_integracao',
     ];
 
     protected $casts = [
@@ -23,7 +28,15 @@ class Grupo extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nome', 'ativo'])
+            ->logOnly([
+                'indexmed_id',
+                'codigo_externo',
+                'nr_cnpj',
+                'logo_path',
+                'nome',
+                'ativo',
+                'status_integracao',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

@@ -6,6 +6,7 @@ use App\Filament\Resources\Funcaos\FuncaoResource;
 use App\Models\Setor;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 class EditFuncao extends EditRecord
@@ -14,27 +15,19 @@ class EditFuncao extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $state = $this->form->getState();
-        $grupoId = $state['grupo_id'] ?? null;
-        $empresaId = $state['empresa_id'] ?? null;
-        $unidadeId = $state['unidade_id'] ?? null;
         $setorId = $data['setor_id'] ?? null;
 
-        if (! $grupoId || ! $empresaId || ! $unidadeId || ! $setorId) {
+        if (! $setorId) {
             throw ValidationException::withMessages([
-                'setor_id' => 'Selecione Grupo, Empresa, Unidade e Setor válidos.',
+                'setor_id' => 'Selecione um Setor válido.',
             ]);
         }
 
-        $setor = Setor::query()->with('unidade.empresa.grupo')->find($setorId);
+        $setor = Setor::query()->find($setorId);
 
-        if (! $setor
-            || $setor->unidade_id !== (int) $unidadeId
-            || $setor->unidade?->empresa_id !== (int) $empresaId
-            || $setor->unidade?->empresa?->grupo_id !== (int) $grupoId
-        ) {
+        if (! $setor) {
             throw ValidationException::withMessages([
-                'setor_id' => 'O Setor selecionado não pertence à Unidade/Empresa/Grupo informados.',
+                'setor_id' => 'O Setor selecionado é inválido.',
             ]);
         }
 
@@ -46,5 +39,14 @@ class EditFuncao extends EditRecord
         return [
             DeleteAction::make(),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        return Model::unguarded(function () use ($record, $data) {
+            $record->fill($data);
+            $record->save();
+            return $record;
+        });
     }
 }

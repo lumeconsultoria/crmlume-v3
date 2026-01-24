@@ -6,6 +6,7 @@ use App\Filament\Resources\Empresas\EmpresaResource;
 use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateEmpresa extends CreateRecord
 {
@@ -39,5 +40,10 @@ class CreateEmpresa extends CreateRecord
         $this->redirect(route('filament.admin.resources.unidades.create', [
             'empresa_id' => $record->getKey(),
         ]));
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        return Model::unguarded(fn() => static::getModel()::create($data));
     }
 }

@@ -13,42 +13,53 @@ class Empresa extends Model
     use LogsActivity;
 
     protected $fillable = [
+        'indexmed_id',
+        'codigo_externo',
         'grupo_id',
-        'nome',
-        'tipo_documento',
-        'documento',
-        'cnae',
-        'atividade',
-        'grau_risco',
-        'cep',
-        'logradouro',
-        'bairro',
-        'cidade',
-        'uf',
+        'nm_razao_social',
+        'nm_fantasia',
+        'nr_cnpj',
+        'cd_cnae',
+        'nr_grau_risco',
+        'ds_telefone',
+        'ds_cep',
+        'ds_logradouro',
+        'ds_numero',
+        'ds_complemento',
+        'ds_bairro',
+        'ds_cidade',
+        'sgl_estado',
         'ativo',
+        'status_integracao',
     ];
 
     protected $casts = [
         'ativo' => 'boolean',
+        'nr_grau_risco' => 'integer',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly([
+                'indexmed_id',
+                'codigo_externo',
                 'grupo_id',
-                'nome',
-                'tipo_documento',
-                'documento',
-                'cnae',
-                'atividade',
-                'grau_risco',
-                'cep',
-                'logradouro',
-                'bairro',
-                'cidade',
-                'uf',
+                'nm_razao_social',
+                'nm_fantasia',
+                'nr_cnpj',
+                'cd_cnae',
+                'nr_grau_risco',
+                'ds_telefone',
+                'ds_cep',
+                'ds_logradouro',
+                'ds_numero',
+                'ds_complemento',
+                'ds_bairro',
+                'ds_cidade',
+                'sgl_estado',
                 'ativo',
+                'status_integracao',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();

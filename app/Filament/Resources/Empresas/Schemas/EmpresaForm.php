@@ -23,7 +23,7 @@ class EmpresaForm
                     ->schema([
                         Grid::make(2)->schema([
                             Select::make('grupo_id')
-                                ->label('Grupo Nome')
+                                ->label('Grupo')
                                 ->relationship('grupo', 'nome')
                                 ->required()
                                 ->searchable()
@@ -35,22 +35,22 @@ class EmpresaForm
                 Section::make('Identificação')
                     ->schema([
                         Grid::make(2)->schema([
-                            TextInput::make('razao_social')
+                            TextInput::make('nm_razao_social')
                                 ->label('Razão Social')
                                 ->maxLength(255)
                                 ->helperText('Nome jurídico.'),
-                            TextInput::make('nome_fantasia')
+                            TextInput::make('nm_fantasia')
                                 ->label('Nome Fantasia')
                                 ->maxLength(255)
                                 ->helperText('Nome comercial, se existir.'),
-                            TextInput::make('documento')
+                            TextInput::make('nr_cnpj')
                                 ->label('CNPJ')
                                 ->placeholder('00.000.000/0000-00')
                                 ->mask('99.999.999/9999-99')
                                 ->live()
                                 ->dehydrateStateUsing(fn($state) => self::normalizeDigits($state))
                                 ->rule('nullable', 'digits:14')
-                                ->unique(ignoreRecord: true, column: 'documento')
+                                ->unique(ignoreRecord: true, column: 'nr_cnpj')
                                 ->helperText('Digite o CNPJ para validar e sugerir dados. Será normalizado ao salvar.')
                                 ->afterStateUpdated(function ($state, $set) {
                                     $cnpj = self::normalizeDigits($state ?? '');
@@ -62,42 +62,28 @@ class EmpresaForm
                                         return;
                                     }
                                     // Preenche apenas campos jurídicos; nome interno fica para confirmação do usuário.
-                                    $set('razao_social', $data['razao_social'] ?? ($data['nome'] ?? null));
-                                    $set('nome_fantasia', $data['nome_fantasia'] ?? null);
-                                    $set('cnae', $data['cnae'] ?? null);
-                                    $set('atividade', $data['atividade'] ?? null);
-                                    $set('telefone', $data['telefone'] ?? null);
-                                    $set('email', $data['email'] ?? null);
-                                    $set('grau_risco', $data['cnae'] ? self::lookupGrauRisco($data['cnae']) : null);
-                                    $set('cep', $data['cep'] ?? null);
-                                    $set('logradouro', $data['logradouro'] ?? null);
-                                    $set('bairro', $data['bairro'] ?? null);
-                                    $set('cidade', $data['cidade'] ?? null);
-                                    $set('uf', $data['uf'] ?? null);
+                                    $set('nm_razao_social', $data['razao_social'] ?? ($data['nome'] ?? null));
+                                    $set('nm_fantasia', $data['nome_fantasia'] ?? null);
+                                    $set('cd_cnae', $data['cnae'] ?? null);
+                                    $set('nr_grau_risco', $data['cnae'] ? self::lookupGrauRisco($data['cnae']) : null);
+                                    $set('ds_telefone', $data['telefone'] ?? null);
+                                    $set('ds_cep', $data['cep'] ?? null);
+                                    $set('ds_logradouro', $data['logradouro'] ?? null);
+                                    $set('ds_bairro', $data['bairro'] ?? null);
+                                    $set('ds_cidade', $data['cidade'] ?? null);
+                                    $set('sgl_estado', $data['uf'] ?? null);
                                 }),
-                            TextInput::make('nome')
-                                ->label('Empresa Nome')
-                                ->required()
-                                ->helperText('Obrigatório. Nome oficial da Empresa.'),
-                            TextInput::make('cnae')
+                            TextInput::make('cd_cnae')
                                 ->label('CNAE')
                                 ->helperText('Principal atividade econômica conforme CNAE.'),
-                            TextInput::make('atividade')
-                                ->label('Atividade')
-                                ->helperText('Descrição da atividade principal.'),
-                            TextInput::make('grau_risco')
+                            TextInput::make('nr_grau_risco')
                                 ->label('Grau de Risco')
                                 ->helperText('Derivado do CNAE (NR 4). Ajuste se necessário.'),
-                            TextInput::make('telefone')
+                            TextInput::make('ds_telefone')
                                 ->label('Telefone')
                                 ->mask('(00) 0000-0000||(00) 0 0000-0000')
                                 ->dehydrateStateUsing(fn($state) => self::normalizeDigits($state))
                                 ->helperText('Contato principal (opcional).'),
-                            TextInput::make('email')
-                                ->label('E-mail')
-                                ->email()
-                                ->maxLength(255)
-                                ->helperText('Opcional.'),
                         ]),
                     ]),
 
@@ -108,7 +94,7 @@ class EmpresaForm
                             ->default(false)
                             ->helperText('Campos são preenchidos pelo CEP; ative para editar.'),
                         Grid::make(3)->schema([
-                            TextInput::make('cep')
+                            TextInput::make('ds_cep')
                                 ->label('CEP')
                                 ->placeholder('00000-000')
                                 ->mask('99999-999')
@@ -129,30 +115,30 @@ class EmpresaForm
                                     if (! is_array($data) || ($data['erro'] ?? false)) {
                                         return;
                                     }
-                                    $set('logradouro', $data['logradouro'] ?? null);
-                                    $set('bairro', $data['bairro'] ?? null);
-                                    $set('cidade', $data['localidade'] ?? null);
-                                    $set('uf', $data['uf'] ?? null);
+                                    $set('ds_logradouro', $data['logradouro'] ?? null);
+                                    $set('ds_bairro', $data['bairro'] ?? null);
+                                    $set('ds_cidade', $data['localidade'] ?? null);
+                                    $set('sgl_estado', $data['uf'] ?? null);
                                 }),
-                            TextInput::make('logradouro')
+                            TextInput::make('ds_logradouro')
                                 ->label('Logradouro')
                                 ->columnSpan(2)
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
-                            TextInput::make('numero')
+                            TextInput::make('ds_numero')
                                 ->label('Número')
                                 ->maxLength(20)
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
-                            TextInput::make('complemento')
+                            TextInput::make('ds_complemento')
                                 ->label('Complemento')
                                 ->maxLength(50)
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
-                            TextInput::make('bairro')
+                            TextInput::make('ds_bairro')
                                 ->label('Bairro')
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
-                            TextInput::make('cidade')
+                            TextInput::make('ds_cidade')
                                 ->label('Cidade')
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
-                            Select::make('uf')
+                            Select::make('sgl_estado')
                                 ->label('UF')
                                 ->options([
                                     'AC' => 'AC',
@@ -190,11 +176,22 @@ class EmpresaForm
 
                 Section::make('Status')
                     ->schema([
-                        Toggle::make('ativo')
-                            ->label('Ativo')
-                            ->default(true)
-                            ->required()
-                            ->helperText('Obrigatório. Define se a Empresa está ativa.'),
+                            Toggle::make('ativo')
+                                ->label('Ativo')
+                                ->default(true)
+                                ->required()
+                                ->helperText('Obrigatório. Define se a Empresa está ativa.'),
+                        Grid::make(2)->schema([
+                            TextInput::make('status_integracao')
+                                ->label('Status Integração (A/I)')
+                                ->maxLength(1)
+                                ->default('A')
+                                ->helperText('Status externo esperado pela IndexMed.'),
+                            TextInput::make('codigo_externo')
+                                ->label('Código Externo')
+                                ->maxLength(50)
+                                ->helperText('cd_interno_empresa para chave bidirecional.'),
+                        ]),
                     ]),
             ]);
     }

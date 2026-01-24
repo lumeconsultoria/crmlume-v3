@@ -10,10 +10,25 @@ class ListColaboradors extends ListRecords
 {
     protected static string $resource = ColaboradorResource::class;
 
+    protected static ?string $breadcrumb = 'Cadastro de Colaborador';
+
+    public function getHeading(): string
+    {
+        return 'Funcionários';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Gerencie a sua base de colaboradores para as ações do aplicativo';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Cadastrar')
+                ->color('success')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }
