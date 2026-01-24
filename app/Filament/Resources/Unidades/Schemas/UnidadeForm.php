@@ -9,179 +9,153 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class UnidadeForm
 {
     public static function configure(Schema $schema): Schema
     {
-        // Hierarquia obrigatória: Grupo → Empresa → Unidade.
         return $schema
             ->components([
                 Section::make('Estrutura Organizacional')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Select::make('grupo_id')
-                                    ->label('Grupo Nome')
-                                    ->options(fn() => Grupo::query()->orderBy('nome')->pluck('nome', 'id'))
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->afterStateHydrated(fn(Set $set, $state, $record) => $set('grupo_id', $record?->empresa?->grupo_id))
-                                    ->afterStateUpdated(function (Set $set): void {
-                                        $set('empresa_id', null);
-                                    })
-                                    ->helperText('Obrigatório. Selecione o Grupo do vínculo.'),
-                                Select::make('empresa_id')
-                                    ->label('Empresa Nome')
-                                    ->options(function (Get $get) {
-                                        $grupoId = $get('grupo_id');
-
-                                        if (! $grupoId) {
-                                            return [];
-                                        }
-
-                                        return Empresa::query()
-                                            ->where('grupo_id', $grupoId)
-                                            ->orderBy('nome')
-                                            ->pluck('nome', 'id');
-                                    })
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->disabled(fn(Get $get): bool => ! $get('grupo_id'))
-                                    ->helperText('Obrigatório. Selecione a Empresa do vínculo.'),
-                            ]),
+                        Grid::make(2)->schema([
+                            Select::make('grupo_id')
+                                ->label('Grupo Nome')
+                                ->options(fn() => Grupo::query()->orderBy('nome')->pluck('nome', 'id'))
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->dehydrated(false)
+                                ->afterStateUpdated(fn($set) => $set('empresa_id', null))
+                                ->helperText('Obrigatório. Selecione o Grupo do vínculo.'),
+                            Select::make('empresa_id')
+                                ->label('Empresa Nome')
+                                ->options(function ($get) {
+                                    $grupoId = $get('grupo_id');
+                                    if (! $grupoId) {
+                                        return [];
+                                    }
+                                    return Empresa::query()
+                                        ->where('grupo_id', $grupoId)
+                                        ->orderBy('nome')
+                                        ->pluck('nome', 'id');
+                                })
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->helperText('Obrigatório. Selecione a Empresa do vínculo.')
+                                ->afterStateUpdated(function ($state, $set) {
+                                    if (! $state) {
+                                        return;
+                                    }
+                                    $empresa = Empresa::find($state);
+                                    if (! $empresa) {
+                                        return;
+                                    }
+                                    // Pré-preenche endereço/contato a partir da Empresa
+                                    $set('cep', $empresa->cep);
+                                    $set('logradouro', $empresa->logradouro);
+                                    $set('bairro', $empresa->bairro);
+                                    $set('cidade', $empresa->cidade);
+                                    $set('uf', $empresa->uf);
+                                    $set('telefone', $empresa->telefone);
+                                    $set('usar_dados_empresa', true);
+                                }),
+                        ]),
                     ]),
+
                 Section::make('Identificação')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('nome')
-                                    ->label('Unidade Nome')
-                                    ->required()
-                                    ->helperText('Obrigatório. Nome oficial da Unidade.'),
-                                Select::make('tipo_documento')
-                                    ->label('Tipo de Documento')
-                                    ->options([
-                                        'cpf' => 'CPF',
-                                        'cnpj' => 'CNPJ',
-                                    ])
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->helperText('Selecione o tipo de documento para aplicar a máscara.'),
-                                TextInput::make('documento')
-                                    ->label('Documento')
-                                    ->mask(fn(Get $get): string => $get('tipo_documento') === 'cpf'
-                                        ? '000.000.000-00'
-                                        : '00.000.000/0000-00')
-                                    ->live(debounce: 800)
-                                    ->helperText('Digite o CPF ou CNPJ.'),
-                                TextInput::make('cnae')
-                                    ->label('CNAE')
-                                    ->helperText('Principal atividade econômica conforme CNAE.'),
-                                TextInput::make('atividade')
-                                    ->label('Atividade')
-                                    ->helperText('Descrição da atividade principal.'),
-                                TextInput::make('grau_risco')
-                                    ->label('Grau de Risco')
-                                    ->helperText('Derivado do CNAE (NR 4). Ajuste se necessário.'),
-                            ]),
+                        Grid::make(2)->schema([
+                            TextInput::make('nome')
+                                ->label('Unidade Nome')
+                                ->required()
+                                ->helperText('Obrigatório. Nome da unidade.'),
+                            Select::make('tipo_documento')
+                                ->label('Tipo de Documento')
+                                ->options([
+                                    'cpf' => 'CPF',
+                                    'cnpj' => 'CNPJ',
+                                ])
+                                ->live()
+                                ->helperText('Selecione o tipo para aplicar a máscara.'),
+                            TextInput::make('documento')
+                                ->label('Documento')
+                                ->placeholder('CPF ou CNPJ')
+                                ->mask(fn($get) => $get('tipo_documento') === 'cpf'
+                                    ? '000.000.000-00'
+                                    : '00.000.000/0000-00')
+                                ->live()
+                                ->dehydrateStateUsing(fn($state) => preg_replace('/\D/', '', $state ?? ''))
+                                ->helperText('Digite o CPF ou CNPJ.'),
+                            TextInput::make('telefone')
+                                ->label('Telefone')
+                                ->mask('(00) 0000-0000||(00) 0 0000-0000')
+                                ->dehydrateStateUsing(fn($state) => preg_replace('/\D/', '', $state ?? ''))
+                                ->helperText('Contato (opcional).'),
+                        ]),
                     ]),
+
                 Section::make('Endereço / Dados Complementares')
-                    ->collapsed()
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('cep')
-                                    ->label('CEP')
-                                    ->mask('00000-000')
-                                    ->live(debounce: 800)
-                                    ->helperText('Digite o CEP.'),
-                                TextInput::make('logradouro')
-                                    ->label('Logradouro'),
-                                TextInput::make('bairro')
-                                    ->label('Bairro'),
-                                TextInput::make('cidade')
-                                    ->label('Cidade'),
-                                TextInput::make('uf')
-                                    ->label('UF')
-                                    ->maxLength(2),
-                                Toggle::make('ativo')
-                                    ->label('Ativo')
-                                    ->required()
-                                    ->helperText('Obrigatório. Define se a Unidade está ativa.'),
-                            ]),
+                        Toggle::make('usar_dados_empresa')
+                            ->label('Usar dados da Empresa')
+                            ->default(true)
+                            ->helperText('Por padrão, copia o endereço da Empresa; desative para editar.'),
+                        Grid::make(2)->schema([
+                            TextInput::make('cep')
+                                ->label('CEP')
+                                ->placeholder('00000-000')
+                                ->mask('99999-999')
+                                ->live()
+                                ->dehydrateStateUsing(fn($state) => preg_replace('/\D/', '', $state ?? ''))
+                                ->rule('nullable', 'digits:8')
+                                ->disabled(fn($get) => $get('usar_dados_empresa'))
+                                ->afterStateUpdated(function ($state, $set) {
+                                    $cep = preg_replace('/\D/', '', $state ?? '');
+                                    if (strlen($cep) !== 8) {
+                                        return;
+                                    }
+                                    $resp = Http::timeout(8)->get("https://viacep.com.br/ws/{$cep}/json/");
+                                    if (! $resp->successful() || ($resp['erro'] ?? false)) {
+                                        return;
+                                    }
+                                    $set('logradouro', $resp['logradouro'] ?? null);
+                                    $set('bairro', $resp['bairro'] ?? null);
+                                    $set('cidade', $resp['localidade'] ?? null);
+                                    $set('uf', $resp['uf'] ?? null);
+                                }),
+                            TextInput::make('logradouro')
+                                ->label('Logradouro')
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            TextInput::make('numero')
+                                ->label('Número')
+                                ->maxLength(20)
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            TextInput::make('complemento')
+                                ->label('Complemento')
+                                ->maxLength(50)
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            TextInput::make('bairro')
+                                ->label('Bairro')
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            TextInput::make('cidade')
+                                ->label('Cidade')
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            TextInput::make('uf')
+                                ->label('UF')
+                                ->maxLength(2)
+                                ->disabled(fn($get) => $get('usar_dados_empresa')),
+                            Toggle::make('ativo')
+                                ->label('Ativo')
+                                ->required()
+                                ->helperText('Define se a Unidade está ativa.'),
+                        ]),
                     ]),
             ]);
     }
-
-    private static function fetchCnpj(string $cnpj): ?array
-    {
-        try {
-            /** @var Response $response */
-            $response = Http::timeout(8)->get("https://www.receitaws.com.br/v1/cnpj/{$cnpj}");
-
-            if (! $response->successful()) {
-                return null;
-            }
-
-            $data = $response->json();
-
-            if (! is_array($data) || ($data['status'] ?? null) === 'ERROR') {
-                return null;
-            }
-
-            $atividade = $data['atividade_principal'][0]['text'] ?? $data['cnae_fiscal_descricao'] ?? null;
-            $cnae = $data['atividade_principal'][0]['code'] ?? $data['cnae_fiscal'] ?? null;
-
-            return [
-                'razao_social' => $data['nome'] ?? null,
-                'nome_fantasia' => $data['fantasia'] ?? null,
-                'cnae' => $cnae,
-                'atividade' => $atividade,
-                'cep' => $data['cep'] ?? null,
-                'logradouro' => $data['logradouro'] ?? null,
-                'bairro' => $data['bairro'] ?? null,
-                'cidade' => $data['municipio'] ?? null,
-                'uf' => $data['uf'] ?? null,
-            ];
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private static function deriveGrauRisco(?string $cnae): ?string
-    {
-        if (! $cnae) {
-            return null;
-        }
-
-        $digits = self::normalizeDigits($cnae);
-        if (strlen($digits) < 5) {
-            return null;
-        }
-
-        $tronco = substr($digits, 0, 5);
-
-        $mapa = [
-            // Adicione aqui o mapeamento oficial NR 4 (tronco 5 dígitos → grau de risco).
-        ];
-
-        return $mapa[$tronco] ?? null;
-    }
-
-    private static function normalizeDigits(string $value): string
-    {
-        return preg_replace('/\D/', '', $value) ?? '';
-    }
 }
-
