@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Funcaos\Pages;
 
+use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use App\Filament\Resources\Funcaos\FuncaoResource;
 use App\Models\Setor;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateFuncao extends CreateRecord
 {
+    use PrefillsEstrutura;
+
     protected static string $resource = FuncaoResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

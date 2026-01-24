@@ -19,9 +19,9 @@ class EmailPendenciaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'RH';
+    protected static string|\UnitEnum|null $navigationGroup = 'Segurança & Governança';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 20;
 
     public static function shouldRegisterNavigation(): bool
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Unidades\Pages;
 
+use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use App\Filament\Resources\Unidades\UnidadeResource;
 use App\Models\Empresa;
 use Filament\Resources\Pages\CreateRecord;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateUnidade extends CreateRecord
 {
+    use PrefillsEstrutura;
+
     protected static string $resource = UnidadeResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

@@ -15,11 +15,37 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class HomologacaoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Garante que o cache de permissões/roles esteja limpo antes de criar/atribuir
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Criar roles primeiro (todas os guards) para evitar RoleDoesNotExist
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'rh', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'admin_lume', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'administrativo_lume', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'adm_lume', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'vendedor_lume', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'gestor', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'ceo', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+
+        // Roles para painel OPS (guard ops)
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'rh', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'gestor', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'vendedor_lume', 'guard_name' => 'ops']);
+        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'ops']);
+
+        // Roles para painel Colaborador (guard colaborador)
+        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'colaborador']);
+
         // =============================
         // 3 empresas, 2 colaboradores cada
         // =============================
@@ -75,28 +101,6 @@ class HomologacaoSeeder extends Seeder
                 echo "✓ Usuário {$nome} criado (Email: {$email})\n";
             }
         }
-
-        // Criar roles
-        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'rh', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'admin_lume', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'administrativo_lume', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'adm_lume', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'vendedor_lume', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'gestor', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'ceo', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
-
-        // Roles para painel OPS (guard ops)
-        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'ops']);
-        Role::firstOrCreate(['name' => 'rh', 'guard_name' => 'ops']);
-        Role::firstOrCreate(['name' => 'gestor', 'guard_name' => 'ops']);
-        Role::firstOrCreate(['name' => 'vendedor_lume', 'guard_name' => 'ops']);
-        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'ops']);
-
-        // Roles para painel Colaborador (guard colaborador)
-        Role::firstOrCreate(['name' => 'colaborador', 'guard_name' => 'colaborador']);
 
         // ========================================
         // COLABORADOR 1: Anderson (Primeiro Acesso)
