@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -37,6 +38,17 @@ class Empresa extends Model
         'ativo' => 'boolean',
         'nr_grau_risco' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Empresa $empresa) {
+            if (! $empresa->grupo_id) {
+                throw ValidationException::withMessages([
+                    'grupo_id' => 'Empresa precisa estar vinculada a um Grupo.',
+                ]);
+            }
+        });
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

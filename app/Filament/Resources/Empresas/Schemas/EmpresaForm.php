@@ -16,7 +16,7 @@ class EmpresaForm
 {
     public static function configure(Schema $schema): Schema
     {
-        // Hierarquia obrigatória: evita dados órfãos e garante consistência para ABAC/RBAC.
+        // Hierarquia obrigatoria: evita dados orfaos e garante consistencia para ABAC/RBAC.
         return $schema
             ->components([
                 Section::make('Estrutura Organizacional')
@@ -26,19 +26,20 @@ class EmpresaForm
                                 ->label('Grupo')
                                 ->relationship('grupo', 'nome')
                                 ->required()
+                                ->rule('exists:grupos,id')
                                 ->searchable()
                                 ->preload()
-                                ->helperText('Obrigatório. Selecione o Grupo do vínculo.'),
+                                ->helperText('Obrigatorio. Selecione o Grupo do vinculo.'),
                         ]),
                     ]),
 
-                Section::make('Identificação')
+                Section::make('Identificacao')
                     ->schema([
                         Grid::make(2)->schema([
                             TextInput::make('nm_razao_social')
-                                ->label('Razão Social')
+                                ->label('Razao Social')
                                 ->maxLength(255)
-                                ->helperText('Nome jurídico.'),
+                                ->helperText('Nome juridico.'),
                             TextInput::make('nm_fantasia')
                                 ->label('Nome Fantasia')
                                 ->maxLength(255)
@@ -51,7 +52,7 @@ class EmpresaForm
                                 ->dehydrateStateUsing(fn($state) => self::normalizeDigits($state))
                                 ->rule('nullable', 'digits:14')
                                 ->unique(ignoreRecord: true, column: 'nr_cnpj')
-                                ->helperText('Digite o CNPJ para validar e sugerir dados. Será normalizado ao salvar.')
+                                ->helperText('Digite o CNPJ para validar e sugerir dados. Sera normalizado ao salvar.')
                                 ->afterStateUpdated(function ($state, $set) {
                                     $cnpj = self::normalizeDigits($state ?? '');
                                     if (strlen($cnpj) !== 14) {
@@ -61,24 +62,39 @@ class EmpresaForm
                                     if (! $data) {
                                         return;
                                     }
-                                    // Preenche apenas campos jurídicos; nome interno fica para confirmação do usuário.
+                                    // Preenche apenas campos juridicos; nome interno fica para confirmacao do usuario.
                                     $set('nm_razao_social', $data['razao_social'] ?? ($data['nome'] ?? null));
                                     $set('nm_fantasia', $data['nome_fantasia'] ?? null);
                                     $set('cd_cnae', $data['cnae'] ?? null);
+                                    $set('ds_atividade_principal', $data['atividade'] ?? null);
                                     $set('nr_grau_risco', $data['cnae'] ? self::lookupGrauRisco($data['cnae']) : null);
                                     $set('ds_telefone', $data['telefone'] ?? null);
                                     $set('ds_cep', $data['cep'] ?? null);
                                     $set('ds_logradouro', $data['logradouro'] ?? null);
+                                    $set('ds_numero', $data['numero'] ?? null);
+                                    $set('ds_complemento', $data['complemento'] ?? null);
                                     $set('ds_bairro', $data['bairro'] ?? null);
                                     $set('ds_cidade', $data['cidade'] ?? null);
                                     $set('sgl_estado', $data['uf'] ?? null);
+                                    $set('editar_endereco', true);
                                 }),
                             TextInput::make('cd_cnae')
                                 ->label('CNAE')
-                                ->helperText('Principal atividade econômica conforme CNAE.'),
+                                ->live()
+                                ->helperText('Principal atividade economica conforme CNAE.')
+                                ->afterStateUpdated(function ($state, $set) {
+                                    $set('nr_grau_risco', self::lookupGrauRisco($state));
+                                    $set('ds_atividade_principal', self::lookupAtividadeByCnae($state));
+                                }),
+                            TextInput::make('ds_atividade_principal')
+                                ->label('Atividade Principal')
+                                ->helperText('Descricao informativa carregada pelo CNAE/CNPJ.')
+                                ->columnSpan(2)
+                                ->disabled()
+                                ->dehydrated(false),
                             TextInput::make('nr_grau_risco')
                                 ->label('Grau de Risco')
-                                ->helperText('Derivado do CNAE (NR 4). Ajuste se necessário.'),
+                                ->helperText('Derivado do CNAE (NR 4). Ajuste se necessario.'),
                             TextInput::make('ds_telefone')
                                 ->label('Telefone')
                                 ->mask('(00) 0000-0000||(00) 0 0000-0000')
@@ -87,19 +103,20 @@ class EmpresaForm
                         ]),
                     ]),
 
-                Section::make('Endereço')
+                Section::make('Endereco')
                     ->schema([
                         Toggle::make('editar_endereco')
-                            ->label('Permitir edição manual do endereço')
+                            ->label('Permitir edicao manual do endereco')
                             ->default(false)
-                            ->helperText('Campos são preenchidos pelo CEP; ative para editar.'),
+                            ->dehydrated(false)
+                            ->helperText('Campos sao preenchidos pelo CEP; ative para editar.'),
                         Grid::make(3)->schema([
                             TextInput::make('ds_cep')
                                 ->label('CEP')
                                 ->placeholder('00000-000')
                                 ->mask('99999-999')
                                 ->live()
-                                ->helperText('Somente números.')
+                                ->helperText('Somente numeros.')
                                 ->dehydrateStateUsing(fn($state) => self::normalizeDigits($state))
                                 ->rule('nullable', 'digits:8')
                                 ->afterStateUpdated(function ($state, $set) {
@@ -119,13 +136,14 @@ class EmpresaForm
                                     $set('ds_bairro', $data['bairro'] ?? null);
                                     $set('ds_cidade', $data['localidade'] ?? null);
                                     $set('sgl_estado', $data['uf'] ?? null);
+                                    $set('editar_endereco', true);
                                 }),
                             TextInput::make('ds_logradouro')
                                 ->label('Logradouro')
                                 ->columnSpan(2)
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
                             TextInput::make('ds_numero')
-                                ->label('Número')
+                                ->label('Numero')
                                 ->maxLength(20)
                                 ->disabled(fn($get) => ! $get('editar_endereco')),
                             TextInput::make('ds_complemento')
@@ -176,19 +194,19 @@ class EmpresaForm
 
                 Section::make('Status')
                     ->schema([
-                            Toggle::make('ativo')
-                                ->label('Ativo')
-                                ->default(true)
-                                ->required()
-                                ->helperText('Obrigatório. Define se a Empresa está ativa.'),
+                        Toggle::make('ativo')
+                            ->label('Ativo')
+                            ->default(true)
+                            ->required()
+                            ->helperText('Obrigatorio. Define se a Empresa esta ativa.'),
                         Grid::make(2)->schema([
                             TextInput::make('status_integracao')
-                                ->label('Status Integração (A/I)')
+                                ->label('Status Integracao (A/I)')
                                 ->maxLength(1)
                                 ->default('A')
                                 ->helperText('Status externo esperado pela IndexMed.'),
                             TextInput::make('codigo_externo')
-                                ->label('Código Externo')
+                                ->label('Codigo Externo')
                                 ->maxLength(50)
                                 ->helperText('cd_interno_empresa para chave bidirecional.'),
                         ]),
@@ -223,6 +241,8 @@ class EmpresaForm
                 'telefone' => $data['telefone'] ?? null,
                 'cep' => $data['cep'] ?? null,
                 'logradouro' => $data['logradouro'] ?? null,
+                'numero' => $data['numero'] ?? null,
+                'complemento' => $data['complemento'] ?? null,
                 'bairro' => $data['bairro'] ?? null,
                 'cidade' => $data['municipio'] ?? null,
                 'uf' => $data['uf'] ?? null,
@@ -233,6 +253,7 @@ class EmpresaForm
     }
 
     private static array $cnaeRiskCache = [];
+    private static array $cnaeDescCache = [];
 
     private static function lookupGrauRisco(?string $cnae): ?string
     {
@@ -245,7 +266,7 @@ class EmpresaForm
             return null;
         }
 
-        // Cache em memória por request.
+        // Cache em memoria por request.
         if (! self::$cnaeRiskCache) {
             $path = base_path('database/cnae_nr04_validado.csv');
             if (! is_file($path)) {
@@ -258,7 +279,7 @@ class EmpresaForm
                     continue;
                 }
                 $cols = str_getcsv($row);
-                [$tronco, $cnaeCompleto, , $grau] = array_pad($cols, 4, null);
+                [$tronco, $cnaeCompleto,, $grau] = array_pad($cols, 4, null);
                 if (! $cnaeCompleto || ! $grau) {
                     continue;
                 }
@@ -275,9 +296,54 @@ class EmpresaForm
             return self::$cnaeRiskCache[$normalized];
         }
 
-        // Fallback pelo tronco (5 dígitos iniciais)
+        // Fallback pelo tronco (5 digitos iniciais)
         $tronco = substr($normalized, 0, 5);
         return self::$cnaeRiskCache['tronco_' . $tronco] ?? null;
+    }
+
+    private static function lookupAtividadeByCnae(?string $cnae): ?string
+    {
+        if (! $cnae) {
+            return null;
+        }
+
+        $normalized = self::normalizeDigits($cnae);
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (! self::$cnaeDescCache) {
+            $path = base_path('database/cnae_nr04_validado.csv');
+            if (! is_file($path)) {
+                return null;
+            }
+
+            $rows = @file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            foreach ($rows as $i => $row) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($row);
+                [$tronco, $cnaeCompleto, $descricao] = array_pad($cols, 3, null);
+                if (! $cnaeCompleto || ! $descricao) {
+                    continue;
+                }
+                $keyFull = self::normalizeDigits($cnaeCompleto);
+                if ($keyFull !== '') {
+                    self::$cnaeDescCache[$keyFull] = $descricao;
+                }
+                if ($tronco) {
+                    self::$cnaeDescCache['tronco_' . $tronco] = $descricao;
+                }
+            }
+        }
+
+        if (isset(self::$cnaeDescCache[$normalized])) {
+            return self::$cnaeDescCache[$normalized];
+        }
+
+        $tronco = substr($normalized, 0, 5);
+        return self::$cnaeDescCache['tronco_' . $tronco] ?? null;
     }
 
     private static function normalizeDigits(string $value): string

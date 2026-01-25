@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -16,7 +17,7 @@ class Unidade extends Model
         'indexmed_id',
         'codigo_externo',
         'empresa_id',
-        'nm_fantasia',
+        'nome',
         'nr_cnpj',
         'cd_cnae',
         'nr_grau_risco',
@@ -44,7 +45,7 @@ class Unidade extends Model
                 'indexmed_id',
                 'codigo_externo',
                 'empresa_id',
-                'nm_fantasia',
+                'nome',
                 'nr_cnpj',
                 'cd_cnae',
                 'nr_grau_risco',

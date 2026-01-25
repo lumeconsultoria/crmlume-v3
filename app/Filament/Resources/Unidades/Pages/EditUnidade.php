@@ -15,11 +15,20 @@ class EditUnidade extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        // grupo_id permanece apenas no estado do formulÃ¡rio (nÃ£o desidratado)
+        $rawState = $this->form->getRawState();
+        $grupoId = $rawState['grupo_id'] ?? null;
         $empresaId = $data['empresa_id'] ?? null;
+
+        if (! $grupoId) {
+            throw ValidationException::withMessages([
+                'grupo_id' => 'Selecione um Grupo valido.',
+            ]);
+        }
 
         if (! $empresaId) {
             throw ValidationException::withMessages([
-                'empresa_id' => 'Selecione uma Empresa válida.',
+                'empresa_id' => 'Selecione uma Empresa valida.',
             ]);
         }
 
@@ -27,9 +36,17 @@ class EditUnidade extends EditRecord
 
         if (! $empresa) {
             throw ValidationException::withMessages([
-                'empresa_id' => 'A Empresa selecionada é inválida.',
+                'empresa_id' => 'A Empresa selecionada e invalida.',
             ]);
         }
+
+        if ($empresa->grupo_id !== $grupoId) {
+            throw ValidationException::withMessages([
+                'empresa_id' => 'A Empresa precisa pertencer ao mesmo Grupo selecionado.',
+            ]);
+        }
+
+        unset($data['grupo_id']);
 
         return $data;
     }
