@@ -76,7 +76,10 @@ class ColaboradorsTable
                                     ->when($grupoId, fn (Builder $query) => $query->where('grupo_id', $grupoId))
                                     ->orderBy('nm_razao_social')
                                     ->get()
-                                    ->mapWithKeys(fn ($e) => [$e->id => $e->nm_razao_social ?? '-- sem nome --'])
+                                    ->mapWithKeys(fn ($e) => [
+                                        $e->id => $e->nm_razao_social
+                                            ?: ($e->nm_fantasia ?: '-- sem nome --'),
+                                    ])
                                     ->all();
                             })
                             ->searchable()
