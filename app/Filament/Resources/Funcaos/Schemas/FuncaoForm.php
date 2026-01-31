@@ -2,140 +2,70 @@
 
 namespace App\Filament\Resources\Funcaos\Schemas;
 
-use App\Models\Empresa;
-use App\Models\Grupo;
 use App\Models\Setor;
-use App\Models\Unidade;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class FuncaoForm
 {
     public static function configure(Schema $schema): Schema
     {
-        // Hierarquia obrigatória: Grupo → Empresa → Unidade → Setor → Função.
         return $schema
             ->components([
-                Section::make('Estrutura Organizacional')
+                Section::make('Estrutura')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Select::make('grupo_id')
-                                    ->label('Grupo Nome')
-                                    ->options(fn() => Grupo::query()->orderBy('nome')->pluck('nome', 'id'))
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->afterStateHydrated(fn(Set $set, $state, $record) => $set('grupo_id', $record?->setor?->unidade?->empresa?->grupo_id))
-                                    ->afterStateUpdated(function (Set $set): void {
-                                        $set('empresa_id', null);
-                                        $set('unidade_id', null);
-                                        $set('setor_id', null);
-                                    })
-                                    ->helperText('Obrigatório. Selecione o Grupo do vínculo.'),
-                                Select::make('empresa_id')
-                                    ->label('Empresa Nome')
-                                    ->options(function (Get $get) {
-                                        $grupoId = $get('grupo_id');
-
-                                        if (! $grupoId) {
-                                            return [];
-                                        }
-
-                                        return Empresa::query()
-                                            ->where('grupo_id', $grupoId)
-                                            ->orderBy('nome')
-                                            ->pluck('nome', 'id');
-                                    })
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->afterStateHydrated(fn(Set $set, $state, $record) => $set('empresa_id', $record?->setor?->unidade?->empresa_id))
-                                    ->afterStateUpdated(function (Set $set): void {
-                                        $set('unidade_id', null);
-                                        $set('setor_id', null);
-                                    })
-                                    ->disabled(fn(Get $get): bool => ! $get('grupo_id'))
-                                    ->helperText('Obrigatório. Selecione a Empresa do vínculo.'),
-                                Select::make('unidade_id')
-                                    ->label('Unidade Nome')
-                                    ->options(function (Get $get) {
-                                        $empresaId = $get('empresa_id');
-
-                                        if (! $empresaId) {
-                                            return [];
-                                        }
-
-                                        return Unidade::query()
-                                            ->where('empresa_id', $empresaId)
-                                            ->orderBy('nome')
-                                            ->pluck('nome', 'id');
-                                    })
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->dehydrated(false)
-                                    ->afterStateHydrated(fn(Set $set, $state, $record) => $set('unidade_id', $record?->setor?->unidade_id))
-                                    ->afterStateUpdated(fn(Set $set) => $set('setor_id', null))
-                                    ->disabled(fn(Get $get): bool => ! $get('empresa_id'))
-                                    ->helperText('Obrigatório. Selecione a Unidade do vínculo.'),
-                                Select::make('setor_id')
-                                    ->label('Setor Nome')
-                                    ->options(function (Get $get) {
-                                        $unidadeId = $get('unidade_id');
-
-                                        if (! $unidadeId) {
-                                            return [];
-                                        }
-
-                                        return Setor::query()
-                                            ->where('unidade_id', $unidadeId)
-                                            ->orderBy('nome')
-                                            ->pluck('nome', 'id');
-                                    })
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->disabled(fn(Get $get): bool => ! $get('unidade_id'))
-                                    ->helperText('Obrigatório. Selecione o Setor do vínculo.'),
-                            ]),
+                        Select::make('setor_id')
+                            ->label('Setor')
+                            ->relationship('setor', 'nome')
+                            ->getOptionLabelFromRecordUsing(fn (Setor $record) => $record->nome ?? '-- sem nome --')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
                     ]),
-                Section::make('Identificação')
+
+                Section::make('Dados da Função')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('nome')
-                                    ->label('Função Nome')
-                                    ->required()
-                                    ->helperText('Obrigatório. Nome oficial da Função.'),
-                                TextInput::make('descricao')
-                                    ->label('Descrição da Função')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->helperText('Obrigatório. Descreva resumidamente a Função.'),
-                            ]),
+                        Grid::make(2)->schema([
+                            TextInput::make('nome')
+                                ->label('Nome da Função')
+                                ->required(),
+                            TextInput::make('cd_cbo')
+                                ->label('CBO')
+                                ->maxLength(20),
+                            TextInput::make('codigo_externo')
+                                ->label('Código Externo')
+                                ->maxLength(50)
+                                ->helperText('cd_interno_funcao'),
+                        ]),
+                        TextInput::make('descricao')
+                            ->label('Descrição')
+                            ->maxLength(255),
                     ]),
-                Section::make('Endereço / Dados Complementares')
-                    ->collapsed()
+
+                Section::make('Status / Integração')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('ativo')
-                                    ->label('Ativo')
-                                    ->required()
-                                    ->helperText('Obrigatório. Define se a Função está ativa.'),
-                            ]),
+                        Grid::make(2)->schema([
+                            Toggle::make('ativo')
+                                ->label('Ativo')
+                                ->required()
+                                ->default(true),
+                            Select::make('status_integracao')
+                                ->label('Status Integração')
+                                ->options([
+                                    'A' => 'Ativo',
+                                    'I' => 'Inativo',
+                                ])
+                                ->default('A')
+                                ->required(),
+                        ]),
+                        TextInput::make('indexmed_id')
+                            ->label('ID IndexMed')
+                            ->numeric()
+                            ->nullable(),
                     ]),
             ]);
     }

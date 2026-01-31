@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Colaboradors\Pages;
 
+use App\Filament\Resources\Concerns\PrefillsEstrutura;
 use App\Filament\Resources\Colaboradors\ColaboradorResource;
 use App\Models\Funcao;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 class CreateColaborador extends CreateRecord
@@ -54,5 +56,10 @@ class CreateColaborador extends CreateRecord
         $data['empresa_id'] = $expectedEmpresaId;
 
         return $data;
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        return Model::unguarded(fn() => static::getModel()::create($data));
     }
 }

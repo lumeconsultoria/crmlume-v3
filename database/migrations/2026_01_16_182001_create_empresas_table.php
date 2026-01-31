@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('empresas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('grupo_id')->constrained('grupos')->onDelete('restrict');
+            $table->foreignId('grupo_id')
+                ->constrained('grupos')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('nome');
             $table->boolean('ativo')->default(true);
             $table->timestamps();

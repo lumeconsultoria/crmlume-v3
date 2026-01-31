@@ -17,24 +17,62 @@ class Colaborador extends Model
     protected $table = 'colaboradores';
 
     protected $fillable = [
+        'indexmed_id',
         'funcao_id',
         'unidade_id',
         'empresa_id',
+        'fl_tipo',
+        'trabalhador_sem_vinculo',
         'nome',
+        'matricula',
+        'cpf',
         'cpf_hash',
+        'genero',
         'data_nascimento',
+        'data_admissao',
+        'ultima_avaliacao_clinica',
+        'user_email',
+        'user_ativo',
+        'email_validado_em',
         'ativo',
+        'codigo_externo',
+        'status_integracao',
     ];
 
     protected $casts = [
         'ativo' => 'boolean',
+        'trabalhador_sem_vinculo' => 'boolean',
         'data_nascimento' => 'date',
+        'data_admissao' => 'date',
+        'ultima_avaliacao_clinica' => 'date',
+        'user_ativo' => 'boolean',
+        'email_validado_em' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['funcao_id', 'unidade_id', 'empresa_id', 'nome', 'ativo'])
+            ->logOnly([
+                'indexmed_id',
+                'funcao_id',
+                'unidade_id',
+                'empresa_id',
+                'fl_tipo',
+                'trabalhador_sem_vinculo',
+                'nome',
+                'matricula',
+                'cpf',
+                'genero',
+                'data_nascimento',
+                'data_admissao',
+                'ultima_avaliacao_clinica',
+                'user_email',
+                'user_ativo',
+                'email_validado_em',
+                'ativo',
+                'codigo_externo',
+                'status_integracao',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

@@ -2,6 +2,17 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\DryRunImportacao;
+use App\Filament\Pages\EstruturaOrganizacional;
+use App\Filament\Pages\GovernancaAcesso;
+use App\Filament\Resources\Colaboradors\ColaboradorResource;
+use App\Filament\Resources\EmailPendencias\EmailPendenciaResource;
+use App\Filament\Resources\Empresas\EmpresaResource;
+use App\Filament\Resources\Funcaos\FuncaoResource;
+use App\Filament\Resources\Grupos\GrupoResource;
+use App\Filament\Resources\PrimeiroAcessos\PrimeiroAcessoResource;
+use App\Filament\Resources\Setors\SetorResource;
+use App\Filament\Resources\Unidades\UnidadeResource;
 use App\Http\Middleware\EnsureAdminPanelAccess;
 use App\Http\Middleware\EnsureColaboradorAtivo;
 use Filament\Http\Middleware\Authenticate;
@@ -9,6 +20,7 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,8 +44,26 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->resources([
+                GrupoResource::class,
+                EmpresaResource::class,
+                UnidadeResource::class,
+                SetorResource::class,
+                FuncaoResource::class,
+                ColaboradorResource::class,
+                EmailPendenciaResource::class,
+                PrimeiroAcessoResource::class,
+            ])
+            ->pages([
+                EstruturaOrganizacional::class,
+                DryRunImportacao::class,
+                GovernancaAcesso::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make('Core do Sistema'),
+                NavigationGroup::make('Segurança & Governança'),
+                NavigationGroup::make('Operacional (Admin)'),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

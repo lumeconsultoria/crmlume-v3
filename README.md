@@ -1,66 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CRM Lume v3
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 1) Visão geral
 
-## About Laravel
+CRM Lume v3 é um CRM modular para operação de processos comerciais e administrativos. A plataforma usa Laravel 12 e Filament v4, com foco em governança, rastreabilidade e continuidade operacional. O projeto foi planejado para evolução contínua e integração futura com serviços externos.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Stack principal**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Laravel 12
+- Filament v4
+- Arquitetura modular (Core / Funcional / Futuro)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 2) Arquitetura do sistema
 
-## Learning Laravel
+O CRM Lume v3 adota arquitetura modular com separação explícita de responsabilidade:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Core**: entidades fundamentais, autenticação, autorização, auditoria, módulos-base.
+- **Funcional**: domínios operacionais (ex.: colaboradores, contratos, agendas, relatórios).
+- **Futuro**: integrações e recursos planejados (WAHA, n8n, conectores externos).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+O desenho privilegia segurança, coesão de domínios e governança por políticas obrigatórias.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 3) Mapa de módulos
 
-## Laravel Sponsors
+**Core**
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Autenticação e sessão
+- RBAC/ABAC e policies
+- Auditoria e trilhas de operação
+- Catálogos e cadastros-base
 
-### Premium Partners
+**Funcionais**
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- Colaboradores
+- Estrutura organizacional
+- Relatórios operacionais
+- Gestão de documentos e anexos
 
-## Contributing
+**Futuros**
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Integração com WAHA
+- Automação via n8n
+- Módulos externos e conectores de dados
 
-## Code of Conduct
+## 4) Fluxos críticos
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Cadastro**
 
-## Security Vulnerabilities
+- Fluxo de criação guiado por políticas e validações do domínio.
+- Registro de auditoria obrigatório.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Primeiro acesso**
 
-## License
+- Usuário criado com perfil inicial mínimo.
+- Reset de senha obrigatório e reforço de MFA quando habilitado.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Permissões**
+
+- Permissões são concedidas por RBAC e refinadas por ABAC.
+- Políticas são obrigatórias para todas as ações sensíveis.
+
+## 5) Segurança e governança
+
+A governança é baseada em Zero Trust, RBAC/ABAC e policies mandatórias. Todas as operações críticas devem passar por camadas de autorização e auditoria.
+
+Documentação de segurança:
+
+- [docs/seguranca/](docs/seguranca/)
+- [docs/politica-flags-modulos.md](docs/politica-flags-modulos.md)
+
+## 6) Como rodar o projeto localmente
+
+Pré-requisitos: PHP 8.3+, Composer, Node.js 20+, banco de dados compatível com Laravel.
+
+1. Instalar dependências PHP:
+    ```bash
+    composer install
+    ```
+2. Instalar dependências front-end:
+    ```bash
+    npm install
+    ```
+3. Configurar ambiente:
+    ```bash
+    copy .env.example .env
+    php artisan key:generate
+    ```
+4. Configurar banco e rodar migrações:
+    ```bash
+    php artisan migrate
+    ```
+5. Subir o servidor local:
+    ```bash
+    php artisan serve
+    ```
+6. Executar o Vite:
+    ```bash
+    npm run dev
+    ```
+
+## 7) Regras de contribuição e limites do projeto
+
+- Mudanças devem respeitar a arquitetura modular (Core/Funcional/Futuro).
+- Todas as ações sensíveis exigem policy explícita.
+- Não é permitido bypass de RBAC/ABAC.
+- Integrações externas devem ser encapsuladas em módulos próprios.
+- Documentação operacional é obrigatória para fluxos críticos.
+
+Limites do projeto:
+
+- Este repositório não distribui configurações de produção.
+- Integrações futuras (WAHA, n8n e externas) são planejadas, não obrigatórias no estado atual.
+- Ajustes de segurança requerem revisão técnica e documentação.

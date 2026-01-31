@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('unidades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas')->onDelete('restrict');
+            $table->foreignId('empresa_id')
+                ->constrained('empresas')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('nome');
             $table->boolean('ativo')->default(true);
             $table->timestamps();

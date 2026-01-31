@@ -6,6 +6,7 @@ use App\Filament\Resources\Setors\SetorResource;
 use App\Models\Unidade;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 class EditSetor extends EditRecord
@@ -14,25 +15,19 @@ class EditSetor extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $state = $this->form->getState();
-        $grupoId = $state['grupo_id'] ?? null;
-        $empresaId = $state['empresa_id'] ?? null;
         $unidadeId = $data['unidade_id'] ?? null;
 
-        if (! $grupoId || ! $empresaId || ! $unidadeId) {
+        if (! $unidadeId) {
             throw ValidationException::withMessages([
-                'unidade_id' => 'Selecione Grupo, Empresa e Unidade válidos.',
+                'unidade_id' => 'Selecione uma Unidade válida.',
             ]);
         }
 
-        $unidade = Unidade::query()->with('empresa.grupo')->find($unidadeId);
+        $unidade = Unidade::query()->find($unidadeId);
 
-        if (! $unidade
-            || $unidade->empresa_id !== (int) $empresaId
-            || $unidade->empresa?->grupo_id !== (int) $grupoId
-        ) {
+        if (! $unidade) {
             throw ValidationException::withMessages([
-                'unidade_id' => 'A Unidade selecionada não pertence à Empresa/Grupo informados.',
+                'unidade_id' => 'A Unidade selecionada é inválida.',
             ]);
         }
 
@@ -44,5 +39,14 @@ class EditSetor extends EditRecord
         return [
             DeleteAction::make(),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        return Model::unguarded(function () use ($record, $data) {
+            $record->fill($data);
+            $record->save();
+            return $record;
+        });
     }
 }

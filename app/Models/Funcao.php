@@ -15,9 +15,14 @@ class Funcao extends Model
     protected $table = 'funcoes';
 
     protected $fillable = [
+        'indexmed_id',
+        'codigo_externo',
         'setor_id',
         'nome',
+        'cd_cbo',
+        'descricao',
         'ativo',
+        'status_integracao',
     ];
 
     protected $casts = [
@@ -27,7 +32,7 @@ class Funcao extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['setor_id', 'nome', 'ativo'])
+            ->logOnly(['indexmed_id', 'codigo_externo', 'setor_id', 'nome', 'cd_cbo', 'descricao', 'ativo', 'status_integracao'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

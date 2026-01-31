@@ -10,10 +10,25 @@ class ListEmpresas extends ListRecords
 {
     protected static string $resource = EmpresaResource::class;
 
+    protected static ?string $breadcrumb = 'Cadastro de Empresa';
+
+    public function getHeading(): string
+    {
+        return 'Empresa / Empregador';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Gerencie as empresas e/ou empregadores cadastrados';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Cadastrar')
+                ->color('success')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

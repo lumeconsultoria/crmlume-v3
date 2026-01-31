@@ -6,6 +6,7 @@ use App\Filament\Resources\Colaboradors\ColaboradorResource;
 use App\Models\Funcao;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 class EditColaborador extends EditRecord
@@ -62,5 +63,14 @@ class EditColaborador extends EditRecord
         return [
             DeleteAction::make(),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        return Model::unguarded(function () use ($record, $data) {
+            $record->fill($data);
+            $record->save();
+            return $record;
+        });
     }
 }

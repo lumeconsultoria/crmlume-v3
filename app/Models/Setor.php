@@ -15,9 +15,13 @@ class Setor extends Model
     protected $table = 'setores';
 
     protected $fillable = [
+        'indexmed_id',
+        'codigo_externo',
         'unidade_id',
         'nome',
+        'descricao',
         'ativo',
+        'status_integracao',
     ];
 
     protected $casts = [
@@ -27,7 +31,7 @@ class Setor extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['unidade_id', 'nome', 'ativo'])
+            ->logOnly(['indexmed_id', 'codigo_externo', 'unidade_id', 'nome', 'descricao', 'ativo', 'status_integracao'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

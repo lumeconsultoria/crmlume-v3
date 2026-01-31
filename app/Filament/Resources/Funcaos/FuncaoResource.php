@@ -20,6 +20,8 @@ class FuncaoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?int $navigationSort = 5;
 
     protected static ?string $recordTitleAttribute = 'Funcao';
